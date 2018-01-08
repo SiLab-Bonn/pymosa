@@ -26,18 +26,6 @@ Pymmosa contains the following configuration files:
 ## Installation
 Install [conda](http://conda.pydata.org).
 
-To enable support for the MMC3 readout board, the following additional packages are required:
-- [PyUSB](https://github.com/walac/pyusb) (>=1.0.0rc1):
-  ```
-  pip install pyusb
-  ```
-  
-- [pySiLibUSB](https://github.com/SiLab-Bonn/pySiLibUSB) (>=2.0.0):
-  ```
-  pip install pySiLibUSB
-  ```
-A detailed installation process for this is described in the [pySiLibUSB wiki] (https://silab-redmine.physik.uni-bonn.de/projects/pysilibusb/wiki).
-
 Install additional required packages:
 ```bash
 conda install numpy pyyaml pytables 
