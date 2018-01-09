@@ -359,7 +359,7 @@ class m26(Dut):
 
 
 if __name__ == '__main__':
-    with open('/home/silab/git/pymosa/pymosa/configuration.yaml', 'r') as f:
+    with open('./configuration.yaml', 'r') as f:
         config = yaml.load(f)
 
     dut = m26(socket_address=config['send_data'])
