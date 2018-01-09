@@ -1,4 +1,4 @@
-
+localparam VERSION = 8'd01;  
 
 module mmc3_m26_eth(
     input wire RESET_N,
@@ -340,6 +340,31 @@ localparam M26_RX_HIGHADDR = 32'ha00f-1;
 
 localparam GPIO_BASEADDR = 32'hb000;
 localparam GPIO_HIGHADDR = 32'hb01f;
+
+
+// VERSION READBACk
+reg [7:0] BUS_DATA_OUT_REG;
+always @ (posedge BUS_CLK) begin
+    if(BUS_RD) begin
+        if(BUS_ADD == 0)
+            BUS_DATA_OUT_REG <= VERSION[7:0];
+        //else if(BUS_ADD == 1)
+        //    BUS_DATA_OUT_REG <= VERSION[15:8];
+        //else if(BUS_ADD == 2)
+            //BUS_DATA_OUT_REG <= BOARD[7:0];
+        //else if(BUS_ADD == 3)
+            //BUS_DATA_OUT_REG <= BOARD[15:8];
+    end
+end
+
+reg READ_VER;
+always @ (posedge BUS_CLK)
+    if(BUS_RD & BUS_ADD < 2)
+        READ_VER <= 1;
+    else
+        READ_VER <= 0;
+
+assign BUS_DATA[7:0] = READ_VER ? BUS_DATA_OUT_REG : 8'hzz;
 
     
 // -------  USER MODULES  ------- //

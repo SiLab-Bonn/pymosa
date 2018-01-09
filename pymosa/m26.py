@@ -65,6 +65,9 @@ class m26(Dut):
     Note:
     Setup run and trigger in configuration file (e.g. configuration.yaml)
     '''
+
+    VERSION = 1  # required version for mmc3_m26_eth.v
+
     def __init__(self, conf=None, context=None, socket_address=None):
         self.meta_data_dtype = np.dtype([('index_start', 'u4'), ('index_stop', 'u4'), ('data_length', 'u4'),
                                          ('timestamp_start', 'f8'), ('timestamp_stop', 'f8'), ('error', 'u4')])
@@ -91,11 +94,11 @@ class m26(Dut):
     def init(self, **kwargs):
         super(m26, self).init()
 
-        # TODO: version control
-#         fw_version = self['intf'].read(0x2000, 1)[0]
-#         logging.info("MMC3 firmware version: %s" % (fw_version))
-#         if fw_version != self.VERSION:
-#             raise Exception("MMC3 firmware version does not satisfy version requirements (read: %s, require: %s)" % (fw_version, self.VERSION))
+        # check firmware version
+        fw_version = self['ETH'].read(0x0000, 1)[0]
+        logging.info("MMC3 firmware version: %s" % (fw_version))
+        if fw_version != self.VERSION:
+            raise Exception("MMC3 firmware version does not satisfy version requirements (read: %s, require: %s)" % (fw_version, self.VERSION))
 
         logging.info('Initializing %s', self.__class__.__name__)
 
