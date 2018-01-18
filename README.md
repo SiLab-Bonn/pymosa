@@ -11,7 +11,7 @@ Readout and configuration are based on a single FPGA-readout board, the MMC3 rea
 The data of the Mimosa26 sensors is streamed continuously to the readout board using RJ45 connectors. An additional RJ45 connection is used for the
 configuration (JTAG) of the Mimosa26 sensors. An extra RJ45 connection provides the interface with the TLU.
 Trigger words from TLU are needed in order to correlate Mimosa26 frame data with a time reference plane in order to obtain a time information for Mimosa26 data.
-The data between the host PC and the readout board is transmitted via Transmission Control Protocol / Internet Protocol (TCP/IP).
+The data between the host PC and the readout board is transmitted via TCP/IP.
 For powering the MMC3 readout board a 5 V DC power supply is needed.
 
 Within pymosa the configuration can be set with the following files:
