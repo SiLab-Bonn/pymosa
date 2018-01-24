@@ -367,6 +367,7 @@ class m26(Dut):
             logging.error('%s%s Aborting run...', msg, msg[-1])
         else:
             logging.error('Aborting run...')
+        self.stop_scan = True
 
 
 if __name__ == '__main__':
