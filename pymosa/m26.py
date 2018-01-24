@@ -63,7 +63,8 @@ class m26(Dut):
     ''' Mimosa26 telescope readout with MMC3 hardware.
 
     Note:
-    Setup run and trigger in configuration file (e.g. configuration.yaml)
+    - Remove not used Mimosa26 planes by commenting out the drivers in the DUT file (i.e. m26.yaml).
+    - Setup run and trigger in configuration file (e.g. configuration.yaml)
     '''
 
     VERSION = 1  # required version for mmc3_m26_eth.v
@@ -128,7 +129,10 @@ class m26(Dut):
         '''
         m26_config_file = kwargs['m26_configuration_file']
         logger.info('Loading M26 configuration file %s', m26_config_file)
+
+        # set M26 configuration file
         self.set_configuration(m26_config_file)
+
         IR = {"BSR_ALL": '00101', "DEV_ID_ALL": '01110', "BIAS_DAC_ALL": '01111', "LINEPAT0_REG_ALL": '10000',
               "DIS_DISCRI_ALL": '10001', "SEQUENCER_PIX_REG_ALL": '10010', "CONTROL_PIX_REG_ALL": '10011',
               "LINEPAT1_REG_ALL": '10100', "SEQUENCER_SUZE_REG_ALL": '10101', "HEADER_REG_ALL": '10110',
@@ -144,7 +148,7 @@ class m26(Dut):
             logger.info('Programming M26 JTAG configuration reg %s', ir)
             logger.debug(self[ir][:])
             self['jtag'].scan_ir([BitLogic(IR[ir])] * 6)
-            ret = self['jtag'].scan_dr([self[ir][:]])[0]
+            self['jtag'].scan_dr([self[ir][:]])[0]
 
         # read JTAG in order to check configuration
         irs = ["DEV_ID_ALL", "BSR_ALL", "BIAS_DAC_ALL", "RO_MODE1_ALL", "RO_MODE0_ALL", "DIS_DISCRI_ALL",
@@ -157,7 +161,7 @@ class m26(Dut):
             self['jtag'].scan_ir([BitLogic(IR[ir])] * 6)
             ret[ir] = self['jtag'].scan_dr([self[ir][:]])[0]
 
-        # check
+        # check if registers are properly programmed by reading them and comparing to settings.
         for k, v in ret.iteritems():
             if k == "CTRL_8b10b_REG1_ALL":
                 pass
@@ -195,7 +199,7 @@ class m26(Dut):
         self['jtag'].scan_ir([BitLogic(IR['RO_MODE0_ALL'])] * 6)
         self['jtag'].scan_dr([self['RO_MODE0_ALL'][:]] * 6)
 
-        # trigger configuration
+        # setup trigger configuration
         self['TLU']['RESET'] = 1
         self['TLU']['TRIGGER_MODE'] = kwargs['TLU']['TRIGGER_MODE']
         self['TLU']['TRIGGER_LOW_TIMEOUT'] = kwargs['TLU']['TRIGGER_LOW_TIMEOUT']
@@ -208,7 +212,7 @@ class m26(Dut):
         self['TLU']['TRIGGER_DATA_DELAY'] = kwargs['TLU']['TRIGGER_DATA_DELAY']
         self['TLU']['TRIGGER_COUNTER'] = kwargs['TLU']['TRIGGER_COUNTER']
         # self['TLU']['TRIGGER_THRESHOLD'] = kwargs['TLU']['TRIGGER_THRESHOLD']
-        #  self['TLU']['TRIGGER_COUNTER'] = 0 TODO: what is this,needed?
+        # self['TLU']['TRIGGER_COUNTER'] = 0 TODO: what is this,needed?
 
         for plane in range(1, 7):
             self['M26_RX%d' % plane].reset()
