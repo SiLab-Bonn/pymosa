@@ -127,6 +127,13 @@ class m26(Dut):
     def configure(self, kwargs):
         '''Configure Mimosa26 sensors via JTAG and configure triggers (TLU).
         '''
+
+        # reset M26 RX
+        map(lambda channel: channel.reset(), self.get_modules('m26_rx'))
+
+        # reset JTAG; this is important otherwise JTAG programming works not properly.
+        self['jtag'].reset()
+
         m26_config_file = kwargs['m26_configuration_file']
         logger.info('Loading M26 configuration file %s', m26_config_file)
 
