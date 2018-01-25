@@ -127,6 +127,31 @@ class m26(Dut):
     def configure(self, kwargs):
         '''Configure Mimosa26 sensors via JTAG and configure triggers (TLU).
         '''
+        def write_jtag(irs, IR):
+            for i, ir in enumerate(irs):
+                logger.info('Programming M26 JTAG configuration reg %s', ir)
+                logger.debug(self[ir][:])
+                self['jtag'].scan_ir([BitLogic(IR[ir])] * 6)
+                self['jtag'].scan_dr([self[ir][:]])[0]
+
+        def check_jtag(irs, IR):
+            # read first registers
+            ret = {}
+            for i, ir in enumerate(irs):
+                logger.info('Reading M26 JTAG configuration reg %s', ir)
+                self['jtag'].scan_ir([BitLogic(IR[ir])] * 6)
+                ret[ir] = self['jtag'].scan_dr([self[ir][:]])[0]
+            # check registers
+            for k, v in ret.iteritems():
+                if k == "CTRL_8b10b_REG1_ALL":
+                    pass
+                elif k == "BSR_ALL":
+                    pass  # TODO mask clock bits and check others
+                elif self[k][:] != v:
+                    logger.error(
+                        "JTAG data does not match %s get=%s set=%s" % (k, v, self[k][:]))
+                else:
+                    logger.info("Checking M26 JTAG %s ok" % k)
 
         # reset M26 RX
         map(lambda channel: channel.reset(), self.get_modules('m26_rx'))
@@ -146,39 +171,16 @@ class m26(Dut):
               "CONTROL_SUZE_REG_ALL": '10111', "CTRL_8b10b_REG0_ALL": '11000', "CTRL_8b10b_REG1_ALL": '11001',
               "RO_MODE1_ALL": '11101', "RO_MODE0_ALL": '11110', "BYPASS_ALL": '11111'}
 
-        # write JTAG
-        irs = ["BIAS_DAC_ALL", "BYPASS_ALL", "BSR_ALL", "RO_MODE0_ALL", "RO_MODE1_ALL", "DIS_DISCRI_ALL",
+        irs = ["DEV_ID_ALL", "BIAS_DAC_ALL", "BYPASS_ALL", "BSR_ALL", "RO_MODE0_ALL", "RO_MODE1_ALL", "DIS_DISCRI_ALL",
                "LINEPAT0_REG_ALL", "LINEPAT1_REG_ALL", "CONTROL_PIX_REG_ALL", "SEQUENCER_PIX_REG_ALL",
                "HEADER_REG_ALL", "CONTROL_SUZE_REG_ALL", "SEQUENCER_SUZE_REG_ALL", "CTRL_8b10b_REG0_ALL",
                "CTRL_8b10b_REG1_ALL"]
-        for i, ir in enumerate(irs):
-            logger.info('Programming M26 JTAG configuration reg %s', ir)
-            logger.debug(self[ir][:])
-            self['jtag'].scan_ir([BitLogic(IR[ir])] * 6)
-            self['jtag'].scan_dr([self[ir][:]])[0]
 
-        # read JTAG in order to check configuration
-        irs = ["DEV_ID_ALL", "BSR_ALL", "BIAS_DAC_ALL", "RO_MODE1_ALL", "RO_MODE0_ALL", "DIS_DISCRI_ALL",
-               "LINEPAT0_REG_ALL", "LINEPAT1_REG_ALL", "CONTROL_PIX_REG_ALL", "SEQUENCER_PIX_REG_ALL",
-               "HEADER_REG_ALL", "CONTROL_SUZE_REG_ALL", "SEQUENCER_SUZE_REG_ALL", "CTRL_8b10b_REG0_ALL",
-               "CTRL_8b10b_REG1_ALL", "BYPASS_ALL"]
-        ret = {}
-        for i, ir in enumerate(irs):
-            logger.info('Reading M26 JTAG configuration reg %s', ir)
-            self['jtag'].scan_ir([BitLogic(IR[ir])] * 6)
-            ret[ir] = self['jtag'].scan_dr([self[ir][:]])[0]
+        # write JTAG configuration
+        write_jtag(irs, IR)
 
         # check if registers are properly programmed by reading them and comparing to settings.
-        for k, v in ret.iteritems():
-            if k == "CTRL_8b10b_REG1_ALL":
-                pass
-            elif k == "BSR_ALL":
-                pass  # TODO mask clock bits and check others
-            elif self[k][:] != v:
-                logger.error(
-                    "JTAG data does not match %s get=%s set=%s" % (k, v, self[k][:]))
-            else:
-                logger.info("Checking M26 JTAG %s ok" % k)
+        check_jtag(irs, IR)
 
         # START procedure
         logger.info('Starting M26')
