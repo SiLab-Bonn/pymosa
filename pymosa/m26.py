@@ -10,7 +10,7 @@ from threading import Timer
 
 import logging
 import os
-import time
+from time import time, sleep, strftime
 import progressbar
 import yaml
 import zmq
@@ -113,7 +113,7 @@ class m26(Dut):
 
         self.scan_id = 'M26_TELESCOPE'
 
-        self.run_name = time.strftime("%Y%m%d_%H%M%S_") + self.scan_id
+        self.run_name = strftime("%Y%m%d_%H%M%S_") + self.scan_id
         self.output_filename = os.path.join(self.working_dir, self.run_name)
 
         self.fh = logging.FileHandler(self.output_filename + '.log')
@@ -233,19 +233,26 @@ class m26(Dut):
         with self.readout(**kwargs):
             got_data = False
             self.stop_scan = False
+            start = time()
             while not self.stop_scan:
                 try:
-                    time.sleep(1.0)
+                    sleep(1.0)
                     self.fifo_readout.print_readout_status()
                     if not got_data:
                         if self.fifo_readout.data_words_per_second() > 0:
                             got_data = True
                             logging.info('Taking data...')
-                            self.progressbar = progressbar.ProgressBar(widgets=['', progressbar.Percentage(), ' ', progressbar.Bar(marker='*', left='|', right='|'), ' ', progressbar.AdaptiveETA()], maxval=kwargs['max_triggers'], poll=10, term_width=80).start()
+                            if kwargs['max_triggers']:
+                                self.progressbar = progressbar.ProgressBar(widgets=['', progressbar.Percentage(), ' ', progressbar.Bar(marker='*', left='|', right='|'), ' ', progressbar.AdaptiveETA()], maxval=kwargs['max_triggers'], poll=10, term_width=80).start()
+                            else:
+                                self.progressbar = progressbar.ProgressBar(widgets=['', progressbar.Percentage(), ' ', progressbar.Bar(marker='*', left='|', right='|'), ' ', progressbar.Timer()], maxval=kwargs['scan_timeout'], poll=10, term_width=80).start()
                     else:
                         triggers = self['TLU']['TRIGGER_COUNTER']
                         try:
-                            self.progressbar.update(triggers)
+                            if kwargs['max_triggers']:
+                                self.progressbar.update(triggers)
+                            else:
+                                self.progressbar.update(time() - start)
                         except ValueError:
                             pass
                         if kwargs['max_triggers'] and triggers >= kwargs['max_triggers']:
