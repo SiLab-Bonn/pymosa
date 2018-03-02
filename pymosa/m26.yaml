@@ -11,18 +11,18 @@ version : 0.1
 transfer_layer:
   - name  : ETH
     type  : SiTcp
-    init:      
+    init:
         ip : "192.168.10.16"
         udp_port : 4660
         tcp_port : 24
         tcp_connection : True
-        
+
 hw_drivers:
   - name      : M26_RX1
     type      : m26_rx
     interface : ETH
     base_addr : 0xa000
-    
+
   - name      : M26_RX2
     type      : m26_rx
     interface : ETH
@@ -42,12 +42,12 @@ hw_drivers:
     type      : m26_rx
     interface : ETH
     base_addr : 0xa040
-    
+
   - name      : M26_RX6
     type      : m26_rx
     interface : ETH
     base_addr : 0xa050
-    
+
   - name      : SRAM
     type      : sram_fifo
     interface : ETH
@@ -59,17 +59,17 @@ hw_drivers:
     interface : ETH
     base_addr : 0x8200
 
-  - name      : gpio_jtag
+  - name      : GPIO_JTAG
     type      : gpio
     interface : ETH
     base_addr : 0xb000
     size      : 8
-    
-  - name      : jtag
+
+  - name      : JTAG
     type      : JtagGpio
-    hw_driver : gpio_jtag
-    size      : 8  
-    
+    hw_driver : GPIO_JTAG
+    size      : 8
+
 registers:
   - name        : DEV_ID_ALL
     type        : StdRegister
@@ -80,7 +80,7 @@ registers:
           offset : 191
           size   : 32
           repeat : 6
-          fields  : 
+          fields  :
             - name     : ID_CODE
               size     : 32
               offset   : 31
@@ -93,7 +93,7 @@ registers:
           offset : 59
           size   : 10
           repeat : 6
-          fields  : 
+          fields  :
             - name     : Test1Pad
               size     : 1
               offset   : 0
@@ -124,7 +124,7 @@ registers:
           offset : 911
           size   : 152
           repeat : 6
-          fields  : 
+          fields  :
             - name     : ICLPDISC
               size     : 8
               offset   : 7
@@ -191,7 +191,7 @@ registers:
           offset : 6911
           size   : 1152
           repeat : 6
-          fields  : 
+          fields  :
             - name     : LinePatL0Reg
               size     : 1152
               offset   : 1151
@@ -204,7 +204,7 @@ registers:
           offset : 6911
           size   : 1152
           repeat : 6
-          fields  : 
+          fields  :
             - name     : DisableLatch
               size     : 1152
               offset   : 1151
@@ -217,7 +217,7 @@ registers:
           offset : 767
           size   : 128
           repeat : 6
-          fields  : 
+          fields  :
             - name     : DataPwrOn
               size     : 32
               offset   : 31
@@ -248,7 +248,7 @@ registers:
           offset : 239
           size   : 40
           repeat : 6
-          fields  : 
+          fields  :
             - name     : RowMka
               size     : 10
               offset   : 9
@@ -276,7 +276,7 @@ registers:
           offset : 6911
           size   : 1152
           repeat : 6
-          fields  : 
+          fields  :
             - name     : LinePatL1Reg
               size     : 1152
               offset   : 1151
@@ -289,7 +289,7 @@ registers:
           offset : 959
           size   : 160
           repeat : 6
-          fields  : 
+          fields  :
             - name     : drstframe
               size     : 16
               offset   : 15
@@ -323,13 +323,13 @@ registers:
   - name        : HEADER_REG_ALL
     type        : StdRegister
     size        : 384
-    driver      : None              
+    driver      : None
     fields:
         - name   : HEADER_REG
           offset : 383
           size   : 64
           repeat : 6
-          fields  : 
+          fields  :
             - name     : trailer1
               size     : 16
               offset   : 15
@@ -351,7 +351,7 @@ registers:
           offset : 287
           size   : 48
           repeat : 6
-          fields  : 
+          fields  :
             - name     : cfgadr
               size     : 3
               offset   : 2
@@ -430,8 +430,8 @@ registers:
           fields  :
             - name     : Ctrl8b10bReg1
               size     : 312
-              offset   : 311 
-          
+              offset   : 311
+
   - name        : RO_MODE0_ALL
     type        : StdRegister
     size        : 48
@@ -441,7 +441,7 @@ registers:
           offset : 47
           size   : 8
           repeat : 6
-          fields  : 
+          fields  :
             - name     : JTAG_Start
               size     : 1
               offset   : 0
@@ -476,7 +476,7 @@ registers:
           offset : 47
           size   : 8
           repeat : 6
-          fields  : 
+          fields  :
             - name     : EnTestDiscri
               size     : 1
               offset   : 0
@@ -510,7 +510,7 @@ registers:
           offset : 5
           size   : 1
           repeat : 6
-          fields  : 
+          fields  :
             - name     : BYPASS
               size     : 1
               offset   : 0

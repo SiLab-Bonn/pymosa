@@ -131,16 +131,16 @@ class m26(Dut):
             for i, ir in enumerate(irs):
                 logger.info('Programming M26 JTAG configuration reg %s', ir)
                 logger.debug(self[ir][:])
-                self['jtag'].scan_ir([BitLogic(IR[ir])] * 6)
-                self['jtag'].scan_dr([self[ir][:]])[0]
+                self['JTAG'].scan_ir([BitLogic(IR[ir])] * 6)
+                self['JTAG'].scan_dr([self[ir][:]])[0]
 
         def check_jtag(irs, IR):
             # read first registers
             ret = {}
             for i, ir in enumerate(irs):
                 logger.info('Reading M26 JTAG configuration reg %s', ir)
-                self['jtag'].scan_ir([BitLogic(IR[ir])] * 6)
-                ret[ir] = self['jtag'].scan_dr([self[ir][:]])[0]
+                self['JTAG'].scan_ir([BitLogic(IR[ir])] * 6)
+                ret[ir] = self['JTAG'].scan_dr([self[ir][:]])[0]
             # check registers
             for k, v in ret.iteritems():
                 if k == "CTRL_8b10b_REG1_ALL":
@@ -157,7 +157,7 @@ class m26(Dut):
         map(lambda channel: channel.reset(), self.get_modules('m26_rx'))
 
         # reset JTAG; this is important otherwise JTAG programming works not properly.
-        self['jtag'].reset()
+        self['JTAG'].reset()
 
         m26_config_file = kwargs['m26_configuration_file']
         logger.info('Loading M26 configuration file %s', m26_config_file)
@@ -189,24 +189,24 @@ class m26(Dut):
         for reg in self["RO_MODE0_ALL"]["RO_MODE0"]:
             reg['En_ExtStart'] = 0
             reg['JTAG_Start'] = 0
-        self['jtag'].scan_ir([BitLogic(IR['RO_MODE0_ALL'])] * 6)
-        self['jtag'].scan_dr([self['RO_MODE0_ALL'][:]])
+        self['JTAG'].scan_ir([BitLogic(IR['RO_MODE0_ALL'])] * 6)
+        self['JTAG'].scan_dr([self['RO_MODE0_ALL'][:]])
         # JTAG start
         for reg in self["RO_MODE0_ALL"]["RO_MODE0"]:
             reg['JTAG_Start'] = 1
-        self['jtag'].scan_ir([BitLogic(IR['RO_MODE0_ALL'])] * 6)
-        self['jtag'].scan_dr([self['RO_MODE0_ALL'][:]])
+        self['JTAG'].scan_ir([BitLogic(IR['RO_MODE0_ALL'])] * 6)
+        self['JTAG'].scan_dr([self['RO_MODE0_ALL'][:]])
         for reg in self["RO_MODE0_ALL"]["RO_MODE0"]:
             reg['JTAG_Start'] = 0
-        self['jtag'].scan_ir([BitLogic(IR['RO_MODE0_ALL'])] * 6)
-        self['jtag'].scan_dr([self['RO_MODE0_ALL'][:]])
+        self['JTAG'].scan_ir([BitLogic(IR['RO_MODE0_ALL'])] * 6)
+        self['JTAG'].scan_dr([self['RO_MODE0_ALL'][:]])
         # write original configuration
         self['RO_MODE0_ALL'][:] = temp
-        self['jtag'].scan_ir([BitLogic(IR['RO_MODE0_ALL'])] * 6)
-        self['jtag'].scan_dr([self['RO_MODE0_ALL'][:]])
+        self['JTAG'].scan_ir([BitLogic(IR['RO_MODE0_ALL'])] * 6)
+        self['JTAG'].scan_dr([self['RO_MODE0_ALL'][:]])
         # readback?
-        self['jtag'].scan_ir([BitLogic(IR['RO_MODE0_ALL'])] * 6)
-        self['jtag'].scan_dr([self['RO_MODE0_ALL'][:]] * 6)
+        self['JTAG'].scan_ir([BitLogic(IR['RO_MODE0_ALL'])] * 6)
+        self['JTAG'].scan_dr([self['RO_MODE0_ALL'][:]] * 6)
 
         # setup trigger configuration
         self['TLU']['RESET'] = 1
