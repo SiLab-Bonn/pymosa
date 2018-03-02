@@ -223,9 +223,8 @@ class m26(Dut):
         # self['TLU']['TRIGGER_THRESHOLD'] = kwargs['TLU']['TRIGGER_THRESHOLD']
         # self['TLU']['TRIGGER_COUNTER'] = 0 TODO: what is this,needed?
 
-        for plane in range(1, 7):
-            self['M26_RX%d' % plane].reset()
-            self['M26_RX%d' % plane]['TIMESTAMP_HEADER'] = 1
+        map(lambda channel: channel.reset(), self.dut.get_modules('m26_rx'))
+        map(lambda channel: channel.set_TIMESTAMP_HEADER(1), self.dut.get_modules('m26_rx'))
 
     def scan(self, **kwargs):
         '''Scan Mimosa26 telescope loop.
@@ -295,8 +294,7 @@ class m26(Dut):
                                 errback=self.handle_err, no_data_timeout=kwargs['no_data_timeout'])
 
         # enable all M26 planes
-        for plane in range(1, 7):
-            self['M26_RX%d' % plane].set_en(True)
+        map(lambda channel: channel.set_EN(True), self.dut.get_modules('m26_rx'))
 
         if kwargs['max_triggers']:
             self['TLU']['MAX_TRIGGERS'] = kwargs['max_triggers']
@@ -321,12 +319,7 @@ class m26(Dut):
         '''
         self.scan_timeout_timer.cancel()
         self['TLU']['TRIGGER_ENABLE'] = False
-        self['M26_RX1'].set_en(False)
-        self['M26_RX2'].set_en(False)
-        self['M26_RX3'].set_en(False)
-        self['M26_RX4'].set_en(False)
-        self['M26_RX5'].set_en(False)
-        self['M26_RX6'].set_en(False)
+        map(lambda channel: channel.set_EN(False), self.dut.get_modules('m26_rx'))
         self.fifo_readout.stop(timeout=timeout)
 
     @contextmanager
