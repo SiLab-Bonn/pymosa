@@ -16,6 +16,7 @@ module mmc3_m26_eth(
     output wire phy_rst_n,
     
     output wire [7:0] LED,
+    output wire [7:0] PMOD,
     
     //output wire CMD_CLK_P, CMD_CLK_N,
     //output wire CMD_DATA_P, CMD_DATA_N,
@@ -30,6 +31,10 @@ module mmc3_m26_eth(
     output wire M26_TDI_P,M26_TDI_N,
     input wire M26_TDO_P,M26_TDO_N,
     
+    output wire M26_CLK_CLK_P,M26_CLK_CLK_N,
+    output wire M26_CLK_START_P,M26_CLK_START_N,
+    output wire M26_CLK_RESET_P,M26_CLK_RESET_N,
+    output wire M26_CLK_SPEAK_P,M26_CLK_SPEAK_N,
     
     output wire RJ45_BUSY_LEMO_TX1, RJ45_CLK_LEMO_TX0, 
     input wire RJ45_TRIGGER, RJ45_RESET,
@@ -341,6 +346,11 @@ localparam M26_RX_HIGHADDR = 32'ha00f-1;
 localparam GPIO_BASEADDR = 32'hb000;
 localparam GPIO_HIGHADDR = 32'hb01f;
 
+localparam GPIO_MKD_BASEADDR = 32'hb020;
+localparam GPIO_MKD_HIGHADDR = 32'hb03f;
+
+localparam GPIO_CLK_BASEADDR = 32'hb040;
+localparam GPIO_CLK_HIGHADDR = 32'hb04f;
 
 // VERSION READBACk
 reg [7:0] BUS_DATA_OUT_REG;
@@ -371,6 +381,41 @@ assign BUS_DATA[7:0] = READ_VER ? BUS_DATA_OUT_REG : 8'hzz;
 ///////////////////// M26 JTAG
 wire M26_TCK, M26_TMS,M26_TDI,M26_TDO,M26_TMS_INV,M26_TDI_INV, M26_TDO_INV;
 wire M26_RESETB;
+wire M26_CLK_START, M26_CLK_SPEAK,M26_CLK_RESET, M26_CLK_CLK;
+wire [3:0] GPIO_JTAG_NC;
+OBUFDS #(
+  .IOSTANDARD("LVDS_25"),
+  .SLEW("SLOW")
+) OBUFDS_inst_m26_clk_start (
+  .O(M26_CLK_START_P),
+  .OB(M26_CLK_START_N),
+  .I(M26_CLK_START)
+);
+OBUFDS #(
+  .IOSTANDARD("LVDS_25"),
+  .SLEW("SLOW")
+) OBUFDS_inst_m26_clk_speak (
+  .O(M26_CLK_SPEAK_P),
+  .OB(M26_CLK_SPEAK_N),
+  .I(M26_CLK_SPEAK)
+);
+OBUFDS #(
+  .IOSTANDARD("LVDS_25"),
+  .SLEW("SLOW")
+) OBUFDS_inst_m26_clk_reset (
+  .O(M26_CLK_RESET_P),
+  .OB(M26_CLK_RESET_N),
+  .I(M26_CLK_RESET)
+);
+OBUFDS #(
+  .IOSTANDARD("LVDS_25"),
+  .SLEW("SLOW")
+) OBUFDS_inst_m26_clk_clk (
+  .O(M26_CLK_CLK_P),
+  .OB(M26_CLK_CLK_N),
+  .I(M26_CLK_CLK)
+);
+
 OBUFDS #(
   .IOSTANDARD("LVDS_25"),
   .SLEW("SLOW") 
@@ -381,27 +426,27 @@ OBUFDS #(
 );
 OBUFDS #(
   .IOSTANDARD("LVDS_25"),
-  .SLEW("SLOW") 
+  .SLEW("SLOW")
 ) OBUFDS_inst_m26_tms (
   .O(M26_TMS_P),
-  .OB(M26_TMS_N), 
-  .I(M26_TMS)    
+  .OB(M26_TMS_N),
+  .I(M26_TMS)
 );
 OBUFDS #(
   .IOSTANDARD("LVDS_25"),
-  .SLEW("SLOW") 
+  .SLEW("SLOW")
 ) OBUFDS_inst_m26_tdi (
   .O(M26_TDI_P),
-  .OB(M26_TDI_N), 
-  .I(M26_TDI)    
+  .OB(M26_TDI_N),
+  .I(M26_TDI)
 );
 IBUFDS #(
-    .DIFF_TERM("TRUE"), 
-    .IBUF_LOW_PWR("FALSE"), 
-    .IOSTANDARD("LVDS_25") 
+    .DIFF_TERM("TRUE"),
+    .IBUF_LOW_PWR("FALSE"),
+    .IOSTANDARD("LVDS_25")
 ) IBUFDS_inst_m26_tdo (
-    .O(M26_TDO), 
-    .I(M26_TDO_P),  
+    .O(M26_TDO),
+    .I(M26_TDO_P),
     .IB(M26_TDO_N)
 );
 assign M26_TMS= ~M26_TMS_INV;
@@ -425,6 +470,21 @@ gpio #(
 );
 
 
+gpio #(
+    .BASEADDR(GPIO_CLK_BASEADDR),
+    .HIGHADDR(GPIO_CLK_HIGHADDR),
+    .ABUSWIDTH(32),
+    .IO_WIDTH(8),
+    .IO_DIRECTION(8'hff)
+) i_gpio_clk (
+    .BUS_CLK(BUS_CLK),
+    .BUS_RST(BUS_RST),
+    .BUS_ADD(BUS_ADD),
+    .BUS_DATA(BUS_DATA),
+    .BUS_RD(BUS_RD),
+    .BUS_WR(BUS_WR),
+    .IO({GPIO_JTAG_NC,M26_CLK_SPEAK, M26_CLK_RESET,M26_CLK_START, M26_CLK_CLK})
+);
 
 wire TRIGGER_ENABLE; // from CMD FSM
 wire TRIGGER_ACCEPTED_FLAG;
@@ -493,7 +553,8 @@ wire [5:0] LOST_ERROR;
 wire [5:0] FIFO_READ_M26_RX;
 wire [5:0] FIFO_EMPTY_M26_RX;
 wire [31:0] FIFO_DATA_M26_RX [5:0];
-     
+wire [5:0] M26_CLK_INV;
+wire [5:0] M26_BUSY;
 genvar ch;
 generate
     for (ch = 0; ch < 6; ch = ch + 1) begin: m26_gen
@@ -551,16 +612,16 @@ generate
             M26_CLK_BUFG[ch] <= M26_CLK_SR[ch][SEL_M26_CLK[ch]];
         */
 
-        BUFG BUFG_inst_M26_CLK (  .O(M26_CLK_BUFG[ch]),  .I(M26_CLK[ch]) );  
-        wire M26_CLK_INV;
-        assign M26_CLK_INV = ~M26_CLK[ch];
-        
+        BUFG BUFG_inst_M26_CLK (  .O(M26_CLK_BUFG[ch]),  .I(M26_CLK[ch]) );
+
+        assign M26_CLK_INV[ch] = ~M26_CLK[ch];
+
         reg [31:0] timestamp_cdc0, timestamp_cdc1, timestamp_m26;
-        always@(posedge M26_CLK_INV) begin
+        always@(posedge M26_CLK_INV[ch]) begin
             timestamp_cdc0 <= timestamp_gray;
             timestamp_cdc1 <= timestamp_cdc0;
         end
-        
+
         integer gbi;
         always@(*) begin
             timestamp_m26[31] = timestamp_cdc1[31];
@@ -594,6 +655,7 @@ generate
             .FIFO_DATA(FIFO_DATA_M26_RX[ch]),
     
             .TIMESTAMP(timestamp_m26),
+            .BUSY(M26_BUSY[ch]),
             
             .LOST_ERROR(LOST_ERROR[ch])
         );
@@ -672,6 +734,52 @@ clock_divider #(
     .CLOCK(CLK_1HZ)
 );
 
-assign LED[7:0] = 8'hf0;
+assign LED[7:6] = 2'hf;
+assign LED[0] = 0;
+assign LED[1] = 0;
+assign LED[2] = 0;
+
+wire M26_MKD_EN;
+wire [6:0] M26_MKD_NC;
+reg [31:0] M26_MKD_reg;
+reg M26_MKD_EN_SYNC;
+
+
+wire M26_MKD_EN; //TODO add external enable of mimosa_rx
+gpio #(
+    .BASEADDR(GPIO_MKD_BASEADDR),
+    .HIGHADDR(GPIO_MKD_HIGHADDR),
+    .ABUSWIDTH(32),
+    .IO_WIDTH(8),
+    .IO_DIRECTION(8'hFF)
+) i_gpio_mkd (
+    .BUS_CLK(BUS_CLK),
+    .BUS_RST(BUS_RST),
+    .BUS_ADD(BUS_ADD),
+    .BUS_DATA(BUS_DATA),
+    .BUS_RD(BUS_RD),
+    .BUS_WR(BUS_WR),
+    .IO({M26_MKD_NC,M26_MKD_EN})
+);
+
+always@(posedge M26_CLK_INV[0]) begin
+     M26_MKD_reg[31:0] <= {M26_MKD_reg[30:0],M26_MKD[0]};
+     M26_MKD_EN_SYNC <= (M26_MKD_EN | M26_BUSY[0]);
+end
+
+assign PMOD[5:4]= 2'h5;
+assign PMOD[0]= (M26_MKD_reg!=0) & M26_MKD_EN_SYNC;
+assign PMOD[1]= (M26_MKD_reg!=0) & M26_MKD_EN_SYNC;
+assign PMOD[2]= (M26_MKD_reg!=0) & M26_MKD_EN_SYNC;
+assign PMOD[3]= (M26_MKD_reg!=0) & M26_MKD_EN_SYNC;
+
+assign PMOD[6]= CLK_1HZ;
+assign PMOD[7]= M26_MKD_EN_SYNC;
+
+
+//ila_0 ila(
+//    .clk(CLK320),
+//    .probe0({M26_DATA1, M26_DATA0, M26_MKD, M26_CLK})
+//);
 
 endmodule

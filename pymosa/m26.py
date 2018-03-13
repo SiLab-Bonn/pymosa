@@ -153,6 +153,9 @@ class m26(Dut):
                 else:
                     logger.info("Checking M26 JTAG %s ok" % k)
 
+	# set the clock distributer inputs in correct states.
+        self.set_clock_distributer()
+
         # reset M26 RX
         map(lambda channel: channel.reset(), self.get_modules('m26_rx'))
 
@@ -225,6 +228,21 @@ class m26(Dut):
 
         map(lambda channel: channel.reset(), self.dut.get_modules('m26_rx'))
         map(lambda channel: channel.set_TIMESTAMP_HEADER(1), self.dut.get_modules('m26_rx'))
+
+    def set_clock_distributer(self,clk=0,start=1,reset=0,speak=1 ):
+        self["START_RESET"]["CLK"]=clk
+        self["START_RESET"]["START"]=start
+        self["START_RESET"]["RESET"]=reset
+        self["START_RESET"]["SPEAK"]=speak
+        self["START_RESET"].write()
+
+    def reset(self,reset_time=2):
+        self["START_RESET"]["RESET"]=1
+        self["START_RESET"].write()
+        sleep(2)
+        self["START_RESET"]["RESET"]=0
+        self["START_RESET"].write()
+
 
     def scan(self, **kwargs):
         '''Scan Mimosa26 telescope loop.

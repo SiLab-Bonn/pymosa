@@ -70,7 +70,34 @@ hw_drivers:
     hw_driver : GPIO_JTAG
     size      : 8
 
+  - name      : gpio_clk
+    type      : gpio
+    interface : ETH
+    base_addr : 0xb040
+    size      : 8
+
 registers:
+  - name        : START_RESET
+    type        : StdRegister
+    hw_driver   : gpio_clk
+    size        : 8
+    fields :
+      - name    : CLK
+        size    : 1
+        offset  : 0
+      - name    : START
+        size    : 1
+        offset  : 1
+      - name    : RESET
+        size    : 1
+        offset  : 2
+      - name    : SPEAK
+        size    : 1
+        offset  : 3
+      - name    : NC
+        size    : 4
+        offset  : 7
+
   - name        : DEV_ID_ALL
     type        : StdRegister
     size        : 192
@@ -514,3 +541,4 @@ registers:
             - name     : BYPASS
               size     : 1
               offset   : 0
+
