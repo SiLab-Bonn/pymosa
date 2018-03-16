@@ -1,9 +1,9 @@
 # *** hardware setup/configuration ***
-no_data_timeout : 10  # no data timeout after which the scan will be aborted, in seconds
-scan_timeout : 8  # timeout for scan after which the scan will be stopped, in seconds; if False no limit on scan time
+no_data_timeout : False  # no data timeout after which the scan will be aborted, in seconds
+scan_timeout : False  # timeout for scan after which the scan will be stopped, in seconds; if False no limit on scan time
 max_triggers : False  # number of maximum received triggers after stopping readout, if False no limit on received trigger
-m26_configuration_file : './m26_config/mmc3_anemome_th10.yaml'  # configuration file for Mimosa26 sensors, basically selects sensor threshold
-send_data : 'tcp://127.0.0.1:5500'  # tcp adress on which data is send; to allow incoming connections on all interfaces use 0.0.0.0
+m26_configuration_file : './m26_config/mmc3_anemome_th8.yaml'  # configuration file for Mimosa26 sensors, basically selects sensor threshold
+send_data : 'tcp://127.0.0.1:4500'  # tcp adress on which data is send; to allow incoming connections on all interfaces use 0.0.0.0
 # output_folder:  # sub-folder in working dir which will be created in order to store data
 
 

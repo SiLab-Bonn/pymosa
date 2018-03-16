@@ -67,7 +67,7 @@ class m26(Dut):
     - Setup run and trigger in configuration file (e.g. configuration.yaml)
     '''
 
-    VERSION = 1  # required version for mmc3_m26_eth.v
+    VERSION = 2  # required version for mmc3_m26_eth.v
 
     def __init__(self, conf=None, context=None, socket_address=None):
         self.meta_data_dtype = np.dtype([('index_start', 'u4'), ('index_stop', 'u4'), ('data_length', 'u4'),
@@ -103,18 +103,21 @@ class m26(Dut):
 
         logging.info('Initializing %s', self.__class__.__name__)
 
-        if 'output_folder' in kwargs:
-            self.working_dir = os.path.join(os.getcwd(), kwargs['output_folder'])
-        else:
-            self.working_dir = os.path.join(os.getcwd(), "output_data")
+
+        self.working_dir = os.path.join(os.getcwd(),kwargs.pop("output_folder", "output_data"))
         if not os.path.exists(self.working_dir):
             os.makedirs(self.working_dir)
         logger.info("Store output data in %s" % self.working_dir)
 
         self.scan_id = 'M26_TELESCOPE'
-
-        self.run_name = strftime("%Y%m%d_%H%M%S_") + self.scan_id
-        self.output_filename = os.path.join(self.working_dir, self.run_name)
+        
+    
+        self.output_filename=kwargs.pop('filename', None)
+        if self.output_filename == None:
+            self.run_name = strftime("%Y%m%d_%H%M%S_") + self.scan_id
+            self.output_filename = os.path.join(self.working_dir, self.run_name)
+        else:
+            self.run_name=os.path.basename(os.path.realpath(self.output_filename))
 
         self.fh = logging.FileHandler(self.output_filename + '.log')
         self.fh.setLevel(logging.DEBUG)
@@ -122,9 +125,9 @@ class m26(Dut):
         self.logger.addHandler(self.fh)
 
         # configure Mimosa26 sensors
-        self.configure(kwargs)
+        self.configure(**kwargs)
 
-    def configure(self, kwargs):
+    def configure(self, **kwargs):
         '''Configure Mimosa26 sensors via JTAG and configure triggers (TLU).
         '''
         def write_jtag(irs, IR):
@@ -158,77 +161,81 @@ class m26(Dut):
 
         # reset M26 RX
         map(lambda channel: channel.reset(), self.get_modules('m26_rx'))
-
-        # reset JTAG; this is important otherwise JTAG programming works not properly.
-        self['JTAG'].reset()
-
+        
         m26_config_file = kwargs['m26_configuration_file']
         logger.info('Loading M26 configuration file %s', m26_config_file)
 
         # set M26 configuration file
         self.set_configuration(m26_config_file)
+        
+        m26_config=kwargs.pop('m26_runconfig', "ON")
+        if m26_config == "ON":
+            # reset JTAG; this is important otherwise JTAG programming works not properly.
+            self['JTAG'].reset()
 
-        IR = {"BSR_ALL": '00101', "DEV_ID_ALL": '01110', "BIAS_DAC_ALL": '01111', "LINEPAT0_REG_ALL": '10000',
-              "DIS_DISCRI_ALL": '10001', "SEQUENCER_PIX_REG_ALL": '10010', "CONTROL_PIX_REG_ALL": '10011',
-              "LINEPAT1_REG_ALL": '10100', "SEQUENCER_SUZE_REG_ALL": '10101', "HEADER_REG_ALL": '10110',
-              "CONTROL_SUZE_REG_ALL": '10111', "CTRL_8b10b_REG0_ALL": '11000', "CTRL_8b10b_REG1_ALL": '11001',
-              "RO_MODE1_ALL": '11101', "RO_MODE0_ALL": '11110', "BYPASS_ALL": '11111'}
+            IR = {"BSR_ALL": '00101', "DEV_ID_ALL": '01110', "BIAS_DAC_ALL": '01111', "LINEPAT0_REG_ALL": '10000',
+                  "DIS_DISCRI_ALL": '10001', "SEQUENCER_PIX_REG_ALL": '10010', "CONTROL_PIX_REG_ALL": '10011',
+                  "LINEPAT1_REG_ALL": '10100', "SEQUENCER_SUZE_REG_ALL": '10101', "HEADER_REG_ALL": '10110',
+                  "CONTROL_SUZE_REG_ALL": '10111', "CTRL_8b10b_REG0_ALL": '11000', "CTRL_8b10b_REG1_ALL": '11001',
+                  "RO_MODE1_ALL": '11101', "RO_MODE0_ALL": '11110', "BYPASS_ALL": '11111'}
 
-        irs = ["DEV_ID_ALL", "BIAS_DAC_ALL", "BYPASS_ALL", "BSR_ALL", "RO_MODE0_ALL", "RO_MODE1_ALL", "DIS_DISCRI_ALL",
-               "LINEPAT0_REG_ALL", "LINEPAT1_REG_ALL", "CONTROL_PIX_REG_ALL", "SEQUENCER_PIX_REG_ALL",
-               "HEADER_REG_ALL", "CONTROL_SUZE_REG_ALL", "SEQUENCER_SUZE_REG_ALL", "CTRL_8b10b_REG0_ALL",
-               "CTRL_8b10b_REG1_ALL"]
+            irs = ["DEV_ID_ALL", "BIAS_DAC_ALL", "BYPASS_ALL", "BSR_ALL", "RO_MODE0_ALL", "RO_MODE1_ALL", "DIS_DISCRI_ALL",
+                   "LINEPAT0_REG_ALL", "LINEPAT1_REG_ALL", "CONTROL_PIX_REG_ALL", "SEQUENCER_PIX_REG_ALL",
+                   "HEADER_REG_ALL", "CONTROL_SUZE_REG_ALL", "SEQUENCER_SUZE_REG_ALL", "CTRL_8b10b_REG0_ALL",
+                   "CTRL_8b10b_REG1_ALL"]
 
-        # write JTAG configuration
-        write_jtag(irs, IR)
+            # write JTAG configuration
+            write_jtag(irs, IR)
 
-        # check if registers are properly programmed by reading them and comparing to settings.
-        check_jtag(irs, IR)
+            # check if registers are properly programmed by reading them and comparing to settings.
+            check_jtag(irs, IR)
 
-        # START procedure
-        logger.info('Starting M26')
-        temp = self['RO_MODE0_ALL'][:]
-        # disable extstart
-        for reg in self["RO_MODE0_ALL"]["RO_MODE0"]:
-            reg['En_ExtStart'] = 0
-            reg['JTAG_Start'] = 0
-        self['JTAG'].scan_ir([BitLogic(IR['RO_MODE0_ALL'])] * 6)
-        self['JTAG'].scan_dr([self['RO_MODE0_ALL'][:]])
-        # JTAG start
-        for reg in self["RO_MODE0_ALL"]["RO_MODE0"]:
-            reg['JTAG_Start'] = 1
-        self['JTAG'].scan_ir([BitLogic(IR['RO_MODE0_ALL'])] * 6)
-        self['JTAG'].scan_dr([self['RO_MODE0_ALL'][:]])
-        for reg in self["RO_MODE0_ALL"]["RO_MODE0"]:
-            reg['JTAG_Start'] = 0
-        self['JTAG'].scan_ir([BitLogic(IR['RO_MODE0_ALL'])] * 6)
-        self['JTAG'].scan_dr([self['RO_MODE0_ALL'][:]])
-        # write original configuration
-        self['RO_MODE0_ALL'][:] = temp
-        self['JTAG'].scan_ir([BitLogic(IR['RO_MODE0_ALL'])] * 6)
-        self['JTAG'].scan_dr([self['RO_MODE0_ALL'][:]])
-        # readback?
-        self['JTAG'].scan_ir([BitLogic(IR['RO_MODE0_ALL'])] * 6)
-        self['JTAG'].scan_dr([self['RO_MODE0_ALL'][:]] * 6)
-
+            # START procedure
+            logger.info('Starting M26')
+            temp = self['RO_MODE0_ALL'][:]
+            # disable extstart
+            for reg in self["RO_MODE0_ALL"]["RO_MODE0"]:
+                reg['En_ExtStart'] = 0
+                reg['JTAG_Start'] = 0
+            self['JTAG'].scan_ir([BitLogic(IR['RO_MODE0_ALL'])] * 6)
+            self['JTAG'].scan_dr([self['RO_MODE0_ALL'][:]])
+            # JTAG start
+            for reg in self["RO_MODE0_ALL"]["RO_MODE0"]:
+                reg['JTAG_Start'] = 1
+            self['JTAG'].scan_ir([BitLogic(IR['RO_MODE0_ALL'])] * 6)
+            self['JTAG'].scan_dr([self['RO_MODE0_ALL'][:]])
+            for reg in self["RO_MODE0_ALL"]["RO_MODE0"]:
+                reg['JTAG_Start'] = 0
+            self['JTAG'].scan_ir([BitLogic(IR['RO_MODE0_ALL'])] * 6)
+            self['JTAG'].scan_dr([self['RO_MODE0_ALL'][:]])
+            # write original configuration
+            self['RO_MODE0_ALL'][:] = temp
+            self['JTAG'].scan_ir([BitLogic(IR['RO_MODE0_ALL'])] * 6)
+            self['JTAG'].scan_dr([self['RO_MODE0_ALL'][:]])
+            # readback?
+            self['JTAG'].scan_ir([BitLogic(IR['RO_MODE0_ALL'])] * 6)
+            self['JTAG'].scan_dr([self['RO_MODE0_ALL'][:]] * 6)
+        else:
+            logger.info("Skipping M26 JTAG configuration")
         # setup trigger configuration
         self['TLU']['RESET'] = 1
-        self['TLU']['TRIGGER_MODE'] = kwargs['TLU']['TRIGGER_MODE']
-        self['TLU']['TRIGGER_LOW_TIMEOUT'] = kwargs['TLU']['TRIGGER_LOW_TIMEOUT']
-        self['TLU']['TRIGGER_SELECT'] = kwargs['TLU']['TRIGGER_SELECT']
-        self['TLU']['TRIGGER_INVERT'] = kwargs['TLU']['TRIGGER_INVERT']
-        self['TLU']['TRIGGER_VETO_SELECT'] = kwargs['TLU']['TRIGGER_VETO_SELECT']
-        self['TLU']['TRIGGER_HANDSHAKE_ACCEPT_WAIT_CYCLES'] = kwargs['TLU']['TRIGGER_HANDSHAKE_ACCEPT_WAIT_CYCLES']
-        self['TLU']['DATA_FORMAT'] = kwargs['TLU']['DATA_FORMAT']
-        self['TLU']['EN_TLU_VETO'] = kwargs['TLU']['EN_TLU_VETO']
-        self['TLU']['TRIGGER_DATA_DELAY'] = kwargs['TLU']['TRIGGER_DATA_DELAY']
-        self['TLU']['TRIGGER_COUNTER'] = kwargs['TLU']['TRIGGER_COUNTER']
+        self['TLU']['TRIGGER_MODE'] = kwargs["TLU"]['TRIGGER_MODE']
+        self['TLU']['TRIGGER_LOW_TIMEOUT'] = kwargs["TLU"]['TRIGGER_LOW_TIMEOUT']
+        self['TLU']['TRIGGER_SELECT'] = kwargs["TLU"]['TRIGGER_SELECT']
+        self['TLU']['TRIGGER_INVERT'] = kwargs["TLU"]['TRIGGER_INVERT']
+        self['TLU']['TRIGGER_VETO_SELECT'] = kwargs["TLU"]['TRIGGER_VETO_SELECT']
+        self['TLU']['TRIGGER_HANDSHAKE_ACCEPT_WAIT_CYCLES'] = kwargs["TLU"]['TRIGGER_HANDSHAKE_ACCEPT_WAIT_CYCLES']
+        self['TLU']['DATA_FORMAT'] = kwargs["TLU"]['DATA_FORMAT']
+        self['TLU']['EN_TLU_VETO'] = kwargs["TLU"]['EN_TLU_VETO']
+        self['TLU']['TRIGGER_DATA_DELAY'] = kwargs["TLU"]['TRIGGER_DATA_DELAY']
+        self['TLU']['TRIGGER_COUNTER'] = kwargs["TLU"]['TRIGGER_COUNTER']
         # self['TLU']['TRIGGER_THRESHOLD'] = kwargs['TLU']['TRIGGER_THRESHOLD']
 
-        map(lambda channel: channel.reset(), self.dut.get_modules('m26_rx'))
-        map(lambda channel: channel.set_TIMESTAMP_HEADER(1), self.dut.get_modules('m26_rx'))
+        map(lambda channel: channel.reset(), self.get_modules('m26_rx'))
+        map(lambda channel: channel.set_TIMESTAMP_HEADER(1), self.get_modules('m26_rx'))
 
     def set_clock_distributer(self, clk=0, start=1, reset=0, speak=1):
+    #Default values -same as in GUI- (self, clk=0, start=1, reset=0, speak=1)
         self["START_RESET"]["CLK"] = clk
         self["START_RESET"]["START"] = start
         self["START_RESET"]["RESET"] = reset
@@ -238,7 +245,7 @@ class m26(Dut):
     def reset(self, reset_time=2):
         self["START_RESET"]["RESET"] = 1
         self["START_RESET"].write()
-        sleep(2)
+        sleep(reset_time)
         self["START_RESET"]["RESET"] = 0
         self["START_RESET"].write()
 
@@ -310,7 +317,7 @@ class m26(Dut):
                                 errback=self.handle_err, no_data_timeout=kwargs['no_data_timeout'])
 
         # enable all M26 planes
-        map(lambda channel: channel.set_EN(True), self.dut.get_modules('m26_rx'))
+        map(lambda channel: channel.set_EN(True), self.get_modules('m26_rx'))
 
         if kwargs['max_triggers']:
             self['TLU']['MAX_TRIGGERS'] = kwargs['max_triggers']
@@ -335,7 +342,7 @@ class m26(Dut):
         '''
         self.scan_timeout_timer.cancel()
         self['TLU']['TRIGGER_ENABLE'] = False
-        map(lambda channel: channel.set_EN(False), self.dut.get_modules('m26_rx'))
+        map(lambda channel: channel.set_EN(False), self.get_modules('m26_rx'))
         self.fifo_readout.stop(timeout=timeout)
 
     @contextmanager
@@ -375,7 +382,7 @@ class m26(Dut):
         self.meta_data_table.row.append()
         self.meta_data_table.flush()
         if self.socket:
-                send_data(self.socket, data_tuple)
+            send_data(self.socket, data_tuple)
 
     def handle_err(self, exc):
         '''Handling of error messages during readout.
@@ -389,9 +396,24 @@ class m26(Dut):
 
 
 if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser(
+        description='Pymosa \n Example: python /<path to pymosa>/m26.py --m26_runconfig --scan_timeout 300 --filename /<path to output file>/<output file name>', formatter_class=argparse.RawTextHelpFormatter)
+    parser.add_argument('--scan_timeout', type=int, default=0,
+                        help="Scan time in seconds. Default=disabled, disable=0")
+    parser.add_argument('-f', '--filename',  type=str,
+                        default=None, help='Name of data file')
+    parser.add_argument('--m26_runconfig',  type=str,
+                        default="ON", help='configure MIMOSA or skip default= ON, ON: configure, OFF: skip')
+    args = parser.parse_args()
+
     with open('./configuration.yaml', 'r') as f:
         config = yaml.load(f)
 
+    config["scan_timeout"]= args.scan_timeout
+    config["filename"]= args.filename
+    config["m26_runconfig"]= args.m26_runconfig
+  
     dut = m26(socket_address=config['send_data'])
     # initialize telescope
     dut.init(**config)
