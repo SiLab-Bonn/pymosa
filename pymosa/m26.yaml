@@ -18,6 +18,7 @@ transfer_layer:
         tcp_connection : True
 
 hw_drivers:
+  # Remove not used Mimosa26 planes by commenting out the corresponding M26_RX1 drivers
   - name      : M26_RX1
     type      : m26_rx
     interface : ETH
@@ -48,11 +49,9 @@ hw_drivers:
     interface : ETH
     base_addr : 0xa050
 
-  - name      : SRAM
-    type      : sram_fifo
+  - name      : SITCP_FIFO
+    type      : sitcp_fifo
     interface : ETH
-    base_addr : 0x200000000
-    base_data_addr : 0x100000000
 
   - name      : TLU
     type      : tlu
@@ -70,7 +69,7 @@ hw_drivers:
     hw_driver : GPIO_JTAG
     size      : 8
 
-  - name      : gpio_clk
+  - name      : GPIO_CLK
     type      : gpio
     interface : ETH
     base_addr : 0xb040
@@ -79,7 +78,7 @@ hw_drivers:
 registers:
   - name        : START_RESET
     type        : StdRegister
-    hw_driver   : gpio_clk
+    hw_driver   : GPIO_CLK
     size        : 8
     fields :
       - name    : CLK
