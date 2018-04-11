@@ -16,12 +16,13 @@ For powering the MMC3 readout board a 5 V DC power supply is needed.
 
 Within pymosa the configuration can be set with the following files:
 
- - **m26_configuration.yaml**:
-   Main configuration file in which run is set up and triggers are configured.
- - **/m26_config/mmc3_anemone_th11.yaml** (or other thresholds):
-   Contains Mimosa26 sensor configuration. By changing the number of the configuration file, the sensor threshold can be changed (between 4 - 11).
  - **m26.yaml**:
    Basil configuration file containing all the necessary information about the DUT (hardware setup).
+ - **m26_configuration.yaml**:
+   Main configuration file in which run is set up and triggers are configured.
+ - **/m26_config/m26_threshold_8.yaml**:
+   Contains Mimosa26 sensor configuration. By changing the number of the configuration file, the sensor threshold can be changed (between 4 - 11, default: 8).
+
 
 ## Installation
 Install [Anacoda](http://conda.pydata.org).
