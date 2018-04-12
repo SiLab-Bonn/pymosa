@@ -1,23 +1,24 @@
 # *** hardware setup/configuration ***
-no_data_timeout : False  # no data timeout after which the scan will be aborted, in seconds
-scan_timeout : False  # timeout for scan after which the scan will be stopped, in seconds; if False no limit on scan time
-max_triggers : False  # number of maximum received triggers after stopping readout, if False no limit on received trigger
-m26_configuration_file : './m26_config/m26_threshold_8.yaml'  # configuration file for Mimosa26 sensors, basically selects sensor threshold
-send_data : 'tcp://127.0.0.1:4500'  # tcp adress on which data is send; to allow incoming connections on all interfaces use 0.0.0.0
-# output_folder:  # sub-folder in working dir which will be created in order to store data
+m26_configuration_file : './m26_config/m26_threshold_8.yaml'  # Configuration file for Mimosa26 sensors, default: threshold 8
+m26_jtag_configuration : True  # Send Mimosa26 configuration via JTAG, default: True
+no_data_timeout : 0  # No data timeout after which the scan will be aborted, in seconds; if 0, the timeout is disabled
+scan_timeout : 0  # Timeout after which the scan will be stopped, in seconds; if 0, the timeout is disabled
+max_triggers : 0  # Maximum number of triggers, if 0, there is no limit on the number of triggers
+#send_data : 'tcp://127.0.0.1:4500'  # TCP address to which the telescope data is send; to allow incoming connections on all interfaces use 0.0.0.0
+#output_folder: telescope_data  # Name of the subfolder which will be created in order to store the telescope data
+#filename: run_1  # Filename of the telescope data file
 
 
-# *** trigger configuration **
+# *** trigger configuration ***
 TLU:
     TRIGGER_MODE                         : 3  # Selecting trigger mode: Use trigger inputs/trigger select (0), TLU no handshake (1), TLU simple handshake (2), TLU data handshake (3)
-    TRIGGER_LOW_TIMEOUT                  : 200  # Maximum wait cycles for TLU trigger low 
-    TRIGGER_SELECT                       : 2  # Selecting trigger input: RX2 (TDC loop-through) (8), RX1 (4), RX0 (2), MonHit/HitOR from Adapter Card (1), disabled (0)
-    TRIGGER_INVERT                       : 0  # Inverting trigger input: RX2 (TDC loop-through) (8), RX1 (4), RX0 (2), MonHit/HitOR from Adapter Card (1), disabled (0)
-    TRIGGER_VETO_SELECT                  : 0  # Selecting trigger veto: RX1 (2), RX FIFO full (1), disabled (0)
+    TRIGGER_LOW_TIMEOUT                  : 200  # Maximum wait cycles for TLU trigger to become low
+    TRIGGER_SELECT                       : 2  # Selecting trigger input
+    TRIGGER_INVERT                       : 0  # Inverting trigger input
+    TRIGGER_VETO_SELECT                  : 0  # Selecting trigger veto
     TRIGGER_HANDSHAKE_ACCEPT_WAIT_CYCLES : 20  # TLU trigger minimum length in TLU clock cycles
     DATA_FORMAT                          : 2  # Select trigger data format: only trigger number (0), only time stamp (1), combined, 15bit time stamp + 16bit trigger number (2)
-    EN_TLU_VETO                          : 0  # Assert TLU veto when external veto
-    TRIGGER_DATA_DELAY                   : 8  # Depends on the cable length and should be adjusted (run scan/tune_tlu.py in pybar repository)
-    TRIGGER_COUNTER                      : 0      
-#    TRIGGER_THRESHOLD                    : 0  # Standard trigger minimum length, TODO: is this needed, can be set with pytlu
+    EN_TLU_VETO                          : 0  # Assert TLU veto when external veto is high
+    TRIGGER_DATA_DELAY                   : 8  # Depends on the cable length and should be adjusted (run scan/tune_tlu.py in pyBAR repository)
+    TRIGGER_THRESHOLD                    : 0  # Trigger minimum length; if 0, the threshold is disabled
             

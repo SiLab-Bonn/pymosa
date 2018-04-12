@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-class m26(Dut):
+class m26():
     ''' Mimosa26 telescope readout with MMC3 hardware.
 
     Note:
@@ -33,34 +33,42 @@ class m26(Dut):
     '''
     VERSION = 2  # required version for mmc3_m26_eth.v
 
-    def __init__(self, conf=None, context=None, socket_address=None):
+    def __init__(self, conf=None):
         if conf is None:
             conf = os.path.join(os.path.dirname(os.path.abspath(__file__)), "m26.yaml")
         logger.info("Loading DUT configuration from file %s" % conf)
 
         # initialize class
-        super(m26, self).__init__(conf)
+        self.dut = Dut(conf=conf)
 
-    def init(self, **kwargs):
+    def init(self, init_conf=None, configure_m26=True):
         # initialize hardware
-        super(m26, self).init()
+        logging.info("Initializing Telescope...")
+        self.dut.init(init_conf=init_conf)
+        self.telescope_conf = init_conf
+
+        # default configuration
+        self.m26_configuration_file = self.telescope_conf.get("m26_configuration_file", None)
+        self.m26_jtag_configuration = self.telescope_conf.get('m26_jtag_configuration', True)  # default True
+        self.no_data_timeout = self.telescope_conf.get('no_data_timeout', 0)  # default None: no data timeout
+        self.scan_timeout = self.telescope_conf.get('scan_timeout', 0)  # default 0: no scan timeout
+        self.max_triggers = self.telescope_conf.get('max_triggers', 0)  # default 0: infinity triggers
+        self.send_data = self.telescope_conf.get('send_data', None)  # default None: do not send data to online monitor
+        self.working_dir = os.path.join(os.getcwd(), self.telescope_conf.get("output_folder", "telescope_data"))
+        self.output_filename = self.telescope_conf.get('filename', None)  # default None: filename is generated
 
         # check firmware version
-        fw_version = self['ETH'].read(0x0000, 1)[0]
+        fw_version = self.dut['ETH'].read(0x0000, 1)[0]
         logging.info("MMC3 firmware version: %s" % (fw_version))
         if fw_version != self.VERSION:
             raise Exception("MMC3 firmware version does not satisfy version requirements (read: %s, require: %s)" % (fw_version, self.VERSION))
 
-        logging.info('Initializing %s', self.__class__.__name__)
-
-        self.working_dir = os.path.join(os.getcwd(), kwargs.pop("output_folder", "output_data"))
         if not os.path.exists(self.working_dir):
             os.makedirs(self.working_dir)
-        logger.info("Store output data in %s" % self.working_dir)
+        logger.info("Storing telescope data in %s" % self.working_dir)
 
         self.scan_id = 'M26_TELESCOPE'
 
-        self.output_filename = kwargs.pop('filename', None)
         if self.output_filename is None:
             self.run_name = strftime("%Y%m%d_%H%M%S_") + self.scan_id
             self.output_filename = os.path.join(self.working_dir, self.run_name)
@@ -68,53 +76,62 @@ class m26(Dut):
             self.run_name = os.path.basename(os.path.realpath(self.output_filename))
 
         # configure Mimosa26 sensors
-        self.configure(**kwargs)
+        if configure_m26:
+            self.configure_m26()
 
         # FIFO readout
-        self.fifo_readout = M26Readout(self)
+        self.m26_readout = M26Readout(dut=self.dut)
 
-    def configure(self, **kwargs):
-        '''Configure Mimosa26 sensors via JTAG and configure triggers (TLU).
+    def configure_m26(self, m26_configuration_file=None, m26_jtag_configuration=None):
+        '''Configure Mimosa26 sensors via JTAG.
         '''
+        if m26_configuration_file:
+            self.m26_configuration_file = m26_configuration_file
+        else:
+            m26_configuration_file = self.m26_configuration_file
+        if not self.m26_configuration_file:
+            raise ValueError('M26 configuration file not provided')
+        logger.info('Loading M26 configuration file %s', m26_configuration_file)
+
         def write_jtag(irs, IR):
             for i, ir in enumerate(irs):
                 logger.info('Programming M26 JTAG configuration reg %s', ir)
-                logger.debug(self[ir][:])
-                self['JTAG'].scan_ir([BitLogic(IR[ir])] * 6)
-                self['JTAG'].scan_dr([self[ir][:]])[0]
+                logger.debug(self.dut[ir][:])
+                self.dut['JTAG'].scan_ir([BitLogic(IR[ir])] * 6)
+                self.dut['JTAG'].scan_dr([self.dut[ir][:]])[0]
 
         def check_jtag(irs, IR):
             # read first registers
             ret = {}
             for i, ir in enumerate(irs):
                 logger.info('Reading M26 JTAG configuration reg %s', ir)
-                self['JTAG'].scan_ir([BitLogic(IR[ir])] * 6)
-                ret[ir] = self['JTAG'].scan_dr([self[ir][:]])[0]
+                self.dut['JTAG'].scan_ir([BitLogic(IR[ir])] * 6)
+                ret[ir] = self.dut['JTAG'].scan_dr([self.dut[ir][:]])[0]
             # check registers
             for k, v in ret.iteritems():
                 if k == "CTRL_8b10b_REG1_ALL":
                     pass
                 elif k == "BSR_ALL":
                     pass  # TODO mask clock bits and check others
-                elif self[k][:] != v:
+                elif self.dut[k][:] != v:
                     logger.error(
-                        "JTAG data does not match %s get=%s set=%s" % (k, v, self[k][:]))
+                        "JTAG data does not match %s get=%s set=%s" % (k, v, self.dut[k][:]))
                 else:
                     logger.info("Checking M26 JTAG %s ok" % k)
 
         # set the clock distributer inputs in correct states.
         self.set_clock_distributer()
 
-        m26_config_file = kwargs['m26_configuration_file']
-        logger.info('Loading M26 configuration file %s', m26_config_file)
-
         # set M26 configuration file
-        self.set_configuration(m26_config_file)
+        self.dut.set_configuration(m26_configuration_file)
 
-        m26_config = kwargs.pop('m26_runconfig', "ON")
-        if m26_config == "ON":
+        if m26_jtag_configuration is not None:
+            self.m26_jtag_configuration = m26_jtag_configuration
+        else:
+            m26_jtag_configuration = self.m26_jtag_configuration
+        if m26_jtag_configuration:
             # reset JTAG; this is important otherwise JTAG programming works not properly.
-            self['JTAG'].reset()
+            self.dut['JTAG'].reset()
 
             IR = {"BSR_ALL": '00101', "DEV_ID_ALL": '01110', "BIAS_DAC_ALL": '01111', "LINEPAT0_REG_ALL": '10000',
                   "DIS_DISCRI_ALL": '10001', "SEQUENCER_PIX_REG_ALL": '10010', "CONTROL_PIX_REG_ALL": '10011',
@@ -135,99 +152,86 @@ class m26(Dut):
 
             # START procedure
             logger.info('Starting M26')
-            temp = self['RO_MODE0_ALL'][:]
+            temp = self.dut['RO_MODE0_ALL'][:]
             # disable extstart
-            for reg in self["RO_MODE0_ALL"]["RO_MODE0"]:
+            for reg in self.dut["RO_MODE0_ALL"]["RO_MODE0"]:
                 reg['En_ExtStart'] = 0
                 reg['JTAG_Start'] = 0
-            self['JTAG'].scan_ir([BitLogic(IR['RO_MODE0_ALL'])] * 6)
-            self['JTAG'].scan_dr([self['RO_MODE0_ALL'][:]])
+            self.dut['JTAG'].scan_ir([BitLogic(IR['RO_MODE0_ALL'])] * 6)
+            self.dut['JTAG'].scan_dr([self.dut['RO_MODE0_ALL'][:]])
             # JTAG start
-            for reg in self["RO_MODE0_ALL"]["RO_MODE0"]:
+            for reg in self.dut["RO_MODE0_ALL"]["RO_MODE0"]:
                 reg['JTAG_Start'] = 1
-            self['JTAG'].scan_ir([BitLogic(IR['RO_MODE0_ALL'])] * 6)
-            self['JTAG'].scan_dr([self['RO_MODE0_ALL'][:]])
-            for reg in self["RO_MODE0_ALL"]["RO_MODE0"]:
+            self.dut['JTAG'].scan_ir([BitLogic(IR['RO_MODE0_ALL'])] * 6)
+            self.dut['JTAG'].scan_dr([self.dut['RO_MODE0_ALL'][:]])
+            for reg in self.dut["RO_MODE0_ALL"]["RO_MODE0"]:
                 reg['JTAG_Start'] = 0
-            self['JTAG'].scan_ir([BitLogic(IR['RO_MODE0_ALL'])] * 6)
-            self['JTAG'].scan_dr([self['RO_MODE0_ALL'][:]])
+            self.dut['JTAG'].scan_ir([BitLogic(IR['RO_MODE0_ALL'])] * 6)
+            self.dut['JTAG'].scan_dr([self.dut['RO_MODE0_ALL'][:]])
             # write original configuration
-            self['RO_MODE0_ALL'][:] = temp
-            self['JTAG'].scan_ir([BitLogic(IR['RO_MODE0_ALL'])] * 6)
-            self['JTAG'].scan_dr([self['RO_MODE0_ALL'][:]])
+            self.dut['RO_MODE0_ALL'][:] = temp
+            self.dut['JTAG'].scan_ir([BitLogic(IR['RO_MODE0_ALL'])] * 6)
+            self.dut['JTAG'].scan_dr([self.dut['RO_MODE0_ALL'][:]])
             # readback?
-            self['JTAG'].scan_ir([BitLogic(IR['RO_MODE0_ALL'])] * 6)
-            self['JTAG'].scan_dr([self['RO_MODE0_ALL'][:]] * 6)
+            self.dut['JTAG'].scan_ir([BitLogic(IR['RO_MODE0_ALL'])] * 6)
+            self.dut['JTAG'].scan_dr([self.dut['RO_MODE0_ALL'][:]] * 6)
         else:
             logger.info("Skipping M26 JTAG configuration")
-        # setup trigger configuration
-        self['TLU']['RESET'] = 1
-        self['TLU']['TRIGGER_MODE'] = kwargs["TLU"]['TRIGGER_MODE']
-        self['TLU']['TRIGGER_LOW_TIMEOUT'] = kwargs["TLU"]['TRIGGER_LOW_TIMEOUT']
-        self['TLU']['TRIGGER_SELECT'] = kwargs["TLU"]['TRIGGER_SELECT']
-        self['TLU']['TRIGGER_INVERT'] = kwargs["TLU"]['TRIGGER_INVERT']
-        self['TLU']['TRIGGER_VETO_SELECT'] = kwargs["TLU"]['TRIGGER_VETO_SELECT']
-        self['TLU']['TRIGGER_HANDSHAKE_ACCEPT_WAIT_CYCLES'] = kwargs["TLU"]['TRIGGER_HANDSHAKE_ACCEPT_WAIT_CYCLES']
-        self['TLU']['DATA_FORMAT'] = kwargs["TLU"]['DATA_FORMAT']
-        self['TLU']['EN_TLU_VETO'] = kwargs["TLU"]['EN_TLU_VETO']
-        self['TLU']['TRIGGER_DATA_DELAY'] = kwargs["TLU"]['TRIGGER_DATA_DELAY']
-        self['TLU']['TRIGGER_COUNTER'] = kwargs["TLU"]['TRIGGER_COUNTER']
-        # self['TLU']['TRIGGER_THRESHOLD'] = kwargs['TLU']['TRIGGER_THRESHOLD']
 
     def set_clock_distributer(self, clk=0, start=1, reset=0, speak=1):
         # Default values -same as in GUI- (self, clk=0, start=1, reset=0, speak=1)
-        self["START_RESET"]["CLK"] = clk
-        self["START_RESET"]["START"] = start
-        self["START_RESET"]["RESET"] = reset
-        self["START_RESET"]["SPEAK"] = speak
-        self["START_RESET"].write()
+        self.dut["START_RESET"]["CLK"] = clk
+        self.dut["START_RESET"]["START"] = start
+        self.dut["START_RESET"]["RESET"] = reset
+        self.dut["START_RESET"]["SPEAK"] = speak
+        self.dut["START_RESET"].write()
 
     def reset(self, reset_time=2):
-        self["START_RESET"]["RESET"] = 1
-        self["START_RESET"].write()
+        self.dut["START_RESET"]["RESET"] = 1
+        self.dut["START_RESET"].write()
         sleep(reset_time)
-        self["START_RESET"]["RESET"] = 0
-        self["START_RESET"].write()
+        self.dut["START_RESET"]["RESET"] = 0
+        self.dut["START_RESET"].write()
 
-    def scan(self, **kwargs):
+    def scan(self):
         '''Scan Mimosa26 telescope loop.
         '''
-        with self.readout(**kwargs):
+        with self.readout():
             got_data = False
             self.stop_scan = False
             start = time()
             while not self.stop_scan:
                 try:
                     sleep(1.0)
-                    self.fifo_readout.print_readout_status()
+                    self.m26_readout.print_readout_status()
                     if not got_data:
-                        if self.fifo_readout.data_words_per_second() > 0:
+                        if self.m26_readout.data_words_per_second() > 0:
                             got_data = True
                             logging.info('Taking data...')
-                            if kwargs['max_triggers']:
-                                self.progressbar = progressbar.ProgressBar(widgets=['', progressbar.Percentage(), ' ', progressbar.Bar(marker='*', left='|', right='|'), ' ', progressbar.AdaptiveETA()], maxval=kwargs['max_triggers'], poll=10, term_width=80).start()
+                            if self.max_triggers:
+                                self.progressbar = progressbar.ProgressBar(widgets=['', progressbar.Percentage(), ' ', progressbar.Bar(marker='*', left='|', right='|'), ' ', progressbar.AdaptiveETA()], maxval=self.max_triggers, poll=10, term_width=80).start()
                             else:
-                                self.progressbar = progressbar.ProgressBar(widgets=['', progressbar.Percentage(), ' ', progressbar.Bar(marker='*', left='|', right='|'), ' ', progressbar.Timer()], maxval=kwargs['scan_timeout'], poll=10, term_width=80).start()
+                                self.progressbar = progressbar.ProgressBar(widgets=['', progressbar.Percentage(), ' ', progressbar.Bar(marker='*', left='|', right='|'), ' ', progressbar.Timer()], maxval=self.scan_timeout, poll=10, term_width=80).start()
                     else:
-                        triggers = self['TLU']['TRIGGER_COUNTER']
+                        triggers = self.dut['TLU']['TRIGGER_COUNTER']
                         try:
-                            if kwargs['max_triggers']:
+                            if self.max_triggers:
                                 self.progressbar.update(triggers)
                             else:
                                 self.progressbar.update(time() - start)
                         except ValueError:
                             pass
-                        if kwargs['max_triggers'] and triggers >= kwargs['max_triggers']:
+                        if self.max_triggers and triggers >= self.max_triggers:
                             self.stop_scan = True
                             self.progressbar.finish()
-                            logging.info('Trigger limit was reached: %i' % kwargs['max_triggers'])
+                            logging.info('Trigger limit was reached: %i' % self.max_triggers)
                 except KeyboardInterrupt:  # react on keyboard interupt
                     logging.info('Scan was stopped due to keyboard interrupt')
                     self.stop_scan = True
 
-        logging.info('Total amount of triggers collected: %d', self['TLU']['TRIGGER_COUNTER'])
+        logging.info('Total amount of triggers collected: %d', self.dut['TLU']['TRIGGER_COUNTER'])
 
-    def start(self, **kwargs):
+    def start(self):
         '''Start Mimosa26 telescope scan.
         '''
         self.fh = logging.FileHandler(self.output_filename + '.log')
@@ -236,44 +240,40 @@ class m26(Dut):
         self.logger.addHandler(self.fh)
 
         with self.access_file():
-            save_configuration_dict(self.raw_data_file.h5_file, 'configuration', kwargs)
-            self.scan(**kwargs)
+            save_configuration_dict(self.raw_data_file.h5_file, 'configuration', self.telescope_conf)
+            self.scan()
 
         self.logger.removeHandler(self.fh)
 
         logging.info('Data Output Filename: %s', self.output_filename + '.h5')
 
     @contextmanager
-    def readout(self, *args, **kwargs):
-        timeout = kwargs.pop('timeout', 10.0)
-        self.start_readout(*args, **kwargs)
+    def readout(self):
+        self.start_readout()
         try:
             yield
         finally:
             try:
-                self.stop_readout(timeout=timeout)
+                self.stop_readout(timeout=10.0)
             except Exception:
                 # in case something fails, call this on last resort
-                if self.fifo_readout.is_running:
-                    self.fifo_readout.stop(timeout=0.0)
+                if self.m26_readout.is_running:
+                    self.m26_readout.stop(timeout=0.0)
 
-    def start_readout(self, **kwargs):
+    def start_readout(self):
         '''Start readout of Mimosa26 sensors.
         '''
-        self.fifo_readout.start(
+        self.m26_readout.start(
             fifos="SITCP_FIFO",
             callback=self.handle_data,
             errback=self.handle_err,
             reset_rx=True,
             reset_fifo=True,
-            no_data_timeout=kwargs['no_data_timeout'],
-            enabled_m26_channels=[rx.name for rx in self.get_modules('m26_rx')])
+            no_data_timeout=self.no_data_timeout,
+            enabled_m26_channels=[rx.name for rx in self.dut.get_modules('m26_rx')])
 
-        if kwargs['max_triggers']:
-            self['TLU']['MAX_TRIGGERS'] = kwargs['max_triggers']
-        else:
-            self['TLU']['MAX_TRIGGERS'] = 0  # infinity triggers
-        self['TLU']['TRIGGER_ENABLE'] = True
+        self.dut['TLU']['MAX_TRIGGERS'] = self.max_triggers
+        self.dut['TLU']['TRIGGER_ENABLE'] = True
 
         def timeout():
             try:
@@ -283,16 +283,16 @@ class m26(Dut):
             self.stop_scan = True
             logging.info('Scan timeout was reached')
 
-        self.scan_timeout_timer = Timer(kwargs['scan_timeout'], timeout)
-        if kwargs['scan_timeout']:
+        self.scan_timeout_timer = Timer(self.scan_timeout, timeout)
+        if self.scan_timeout:
             self.scan_timeout_timer.start()
 
     def stop_readout(self, timeout=10.0):
         '''Stop readout of Mimosa26 sensors.
         '''
         self.scan_timeout_timer.cancel()
-        self['TLU']['TRIGGER_ENABLE'] = False
-        self.fifo_readout.stop(timeout=timeout)
+        self.dut['TLU']['TRIGGER_ENABLE'] = False
+        self.m26_readout.stop(timeout=timeout)
 
     @contextmanager
     def access_file(self):
@@ -308,7 +308,7 @@ class m26(Dut):
         self.raw_data_file = open_raw_data_file(filename=self.output_filename,
                                                 mode='w',
                                                 title=self.run_name,
-                                                socket_address=config['send_data'])
+                                                socket_address=self.send_data)
         if self.raw_data_file.socket:
             # send reset to indicate a new scan for the online monitor
             send_meta_data(self.raw_data_file.socket, None, name='Reset')
@@ -339,22 +339,32 @@ class m26(Dut):
 
 
 if __name__ == '__main__':
+    from pymosa import __version__ as pymosa_version
     import argparse
-    parser = argparse.ArgumentParser(description='Pymosa \n Example: python /<path to pymosa>/m26.py --m26_runconfig --scan_timeout 300 --filename /<path to output file>/<output file name>', formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument('--scan_timeout', type=int, default=0, help="Scan time in seconds. Default=disabled, disable=0")
-    parser.add_argument('-f', '--filename', type=str, default=None, help='Name of data file')
-    parser.add_argument('--m26_runconfig', type=str, default="ON", help='configure MIMOSA or skip default= ON, ON: configure, OFF: skip')
+    parser = argparse.ArgumentParser(description='Pymosa %s\nExample: python m26.py --no-m26-jtag-configuration --filename <output filename>' % pymosa_version, formatter_class=argparse.RawTextHelpFormatter)
+    parser.add_argument('-f', '--filename', type=str, metavar='<output filename>', action='store', help='filename of the telescope data file')
+    parser.add_argument('--scan_timeout', type=int, metavar='<scan timeout>', action='store', help="scan timeout in seconds, default: 0 (disabled)")
+    parser.add_argument('--max_triggers', type=int, metavar='<number of triggers>', action='store', help="maximum number of triggers, default: 0 (disabled)")
+    parser.add_argument('--no-m26-jtag-configuration', dest='no_m26_jtag_configuration', action='store_true', help='disable Mimosa26 configuration via JTAG.')
+    parser.set_defaults(no_m26_jtag_configuration=False)
     args = parser.parse_args()
 
     with open('./m26_configuration.yaml', 'r') as f:
         config = yaml.load(f)
 
-    config["scan_timeout"] = args.scan_timeout
-    config["filename"] = args.filename
-    config["m26_runconfig"] = args.m26_runconfig
+    print args
+    if args.filename is not None:
+        config["filename"] = args.filename
+    if args.scan_timeout is not None:
+        config["scan_timeout"] = args.scan_timeout
+    if args.max_triggers is not None:
+        config["max_triggers"] = args.max_triggers
+    if args.no_m26_jtag_configuration:
+        config["m26_jtag_configuration"] = False
 
-    dut = m26(socket_address=config['send_data'])
-    # initialize telescope
-    dut.init(**config)
-    # start telescope readout using run config
-    dut.start(**config)
+    # Create telescope object and load hardware configuration
+    telescope = m26(conf=None)  # None: use default hardware configuration
+    # Initialize telescope hardware and set up parameters
+    telescope.init(init_conf=config)
+    # Start telescope readout
+    telescope.start()
