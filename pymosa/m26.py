@@ -31,7 +31,7 @@ class m26():
     - Remove not used Mimosa26 planes by commenting out the drivers in the DUT file (i.e. m26.yaml).
     - Set up trigger in DUT configuration file (i.e. m26_configuration.yaml).
     '''
-    VERSION = 2  # required version for mmc3_m26_eth.v
+    VERSION = 1  # required version for mmc3_m26_eth.v
 
     def __init__(self, conf=None):
         if conf is None:
