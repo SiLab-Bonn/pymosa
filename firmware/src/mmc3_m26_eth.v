@@ -658,7 +658,6 @@ generate
             .FIFO_DATA(FIFO_DATA_M26_RX[ch]),
 
             .TIMESTAMP(timestamp_m26),
-            .BUSY(M26_BUSY[ch]),
 
             .LOST_ERROR(LOST_ERROR[ch])
         );
