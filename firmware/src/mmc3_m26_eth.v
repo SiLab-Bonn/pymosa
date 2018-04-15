@@ -458,7 +458,8 @@ gpio #(
     .HIGHADDR(GPIO_HIGHADDR),
     .ABUSWIDTH(32),
     .IO_WIDTH(8),
-    .IO_DIRECTION(8'hef)
+    .IO_DIRECTION(8'hef),
+    .IO_TRI(8'h00)
 ) i_gpio_jtag (
     .BUS_CLK(BUS_CLK),
     .BUS_RST(BUS_RST),
@@ -475,7 +476,8 @@ gpio #(
     .HIGHADDR(GPIO_CLK_HIGHADDR),
     .ABUSWIDTH(32),
     .IO_WIDTH(8),
-    .IO_DIRECTION(8'hff)
+    .IO_DIRECTION(8'hff),
+    .IO_TRI(8'h00)
 ) i_gpio_clk (
     .BUS_CLK(BUS_CLK),
     .BUS_RST(BUS_RST),
@@ -521,7 +523,8 @@ tlu_controller #(
 
     .TRIGGER({8'b0}),
     .TRIGGER_VETO({7'b0, FIFO_FULL}),
-    
+    .TIMESTAMP_RESET(1'b0),
+
     //.EXT_TRIGGER_ENABLE(EXT_TRIGGER_ENABLE),
     .TRIGGER_ACKNOWLEDGE(TRIGGER_ACCEPTED_FLAG),
     .TRIGGER_ACCEPTED_FLAG(TRIGGER_ACCEPTED_FLAG),
@@ -751,7 +754,8 @@ gpio #(
     .HIGHADDR(GPIO_MKD_HIGHADDR),
     .ABUSWIDTH(32),
     .IO_WIDTH(8),
-    .IO_DIRECTION(8'hFF)
+    .IO_DIRECTION(8'hFF),
+    .IO_TRI(8'h00)
 ) i_gpio_mkd (
     .BUS_CLK(BUS_CLK),
     .BUS_RST(BUS_RST),
