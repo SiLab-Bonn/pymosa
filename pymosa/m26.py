@@ -249,8 +249,8 @@ class m26():
 
     @contextmanager
     def readout(self):
-        self.start_readout()
         try:
+            self.start_readout()
             yield
         finally:
             try:
@@ -299,10 +299,12 @@ class m26():
         try:
             self.open_file()
             yield
-            self.close_file()
         finally:
-            # in case something fails, call this on last resort
-            self.raw_data_file = None
+            try:
+                self.close_file()
+            except Exception:
+                # in case something fails, call this on last resort
+                self.raw_data_file = None
 
     def open_file(self):
         self.raw_data_file = open_raw_data_file(filename=self.output_filename,
