@@ -82,19 +82,6 @@ set_property PACKAGE_PIN P23 [get_ports {LED[7]}]
 set_property IOSTANDARD LVCMOS25 [get_ports LED*]
 set_property SLEW SLOW [get_ports LED*]
 
-
-#PORT 0?
-#set_property PACKAGE_PIN B9 [get_ports CMD_CLK_N]
-#set_property PACKAGE_PIN D8 [get_ports CMD_DATA_N]
-#set_property IOSTANDARD LVDS_25 [get_ports CMD_CLK*]
-#set_property IOSTANDARD LVDS_25 [get_ports CMD_DATA*]
-#set_property PACKAGE_PIN H12 [get_ports RJ45_HITOR_P]
-#set_property PACKAGE_PIN H11 [get_ports RJ45_HITOR_N]
-#set_property IOSTANDARD LVDS_25 [get_ports RJ45_HITOR*]
-#set_property PACKAGE_PIN J10 [get_ports DOBOUT_N]
-#set_property IOSTANDARD LVDS_25 [get_ports DOBOUT*]
-#set_property KEEPER true [get_ports DOBOUT_P]
-
 set_property BITSTREAM.CONFIG.UNUSEDPIN PULLUP [current_design]
 
 #####

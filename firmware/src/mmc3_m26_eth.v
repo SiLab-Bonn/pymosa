@@ -18,11 +18,6 @@ module mmc3_m26_eth(
     output wire [7:0] LED,
     output wire [7:0] PMOD,
 
-    //output wire CMD_CLK_P, CMD_CLK_N,
-    //output wire CMD_DATA_P, CMD_DATA_N,
-    //input wire RJ45_HITOR_N, RJ45_HITOR_P,
-    //input wire DOBOUT_N, DOBOUT_P,
-
     input wire [5:0] M26_CLK_P, M26_CLK_N, M26_MKD_P, M26_MKD_N,
     input wire [5:0] M26_DATA1_P, M26_DATA1_N, M26_DATA0_P, M26_DATA0_N,
 
@@ -91,7 +86,7 @@ PLLE2_BASE #(
 
      .CLKFBOUT(PLL_FEEDBACK),
 
-     .LOCKED(LOCKED),     // 1-bit output: LOCK
+     .LOCKED(LOCKED), // 1-bit output: LOCK
 
      // Input 100 MHz clock
      .CLKIN1(clkin),
@@ -146,7 +141,7 @@ PLLE2_BASE_inst_2 (
       .CLKOUT5(),
 
       .CLKFBOUT(PLL_FEEDBACK2),
-      .LOCKED(LOCKED2),     // 1-bit output: LOCK
+      .LOCKED(LOCKED2), // 1-bit output: LOCK
 
       .CLKIN1(clkin),
 
@@ -358,12 +353,6 @@ always @ (posedge BUS_CLK) begin
     if(BUS_RD) begin
         if(BUS_ADD == 0)
             BUS_DATA_OUT_REG <= VERSION[7:0];
-        //else if(BUS_ADD == 1)
-        //    BUS_DATA_OUT_REG <= VERSION[15:8];
-        //else if(BUS_ADD == 2)
-            //BUS_DATA_OUT_REG <= BOARD[7:0];
-        //else if(BUS_ADD == 3)
-            //BUS_DATA_OUT_REG <= BOARD[15:8];
     end
 end
 
