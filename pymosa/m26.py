@@ -205,7 +205,6 @@ class m26():
             while not self.stop_scan:
                 try:
                     sleep(1.0)
-                    self.m26_readout.print_readout_status()
                     if not got_data:
                         if self.m26_readout.data_words_per_second() > 0:
                             got_data = True
@@ -276,6 +275,7 @@ class m26():
 
         self.dut['TLU']['MAX_TRIGGERS'] = self.max_triggers
         self.dut['TLU']['TRIGGER_ENABLE'] = True
+        self.m26_readout.print_readout_status()
 
         def timeout():
             try:
@@ -295,6 +295,7 @@ class m26():
         self.scan_timeout_timer.cancel()
         self.dut['TLU']['TRIGGER_ENABLE'] = False
         self.m26_readout.stop(timeout=timeout)
+        self.m26_readout.print_readout_status()
 
     @contextmanager
     def access_file(self):
