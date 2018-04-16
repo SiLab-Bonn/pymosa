@@ -493,7 +493,8 @@ tlu_controller #(
     .BASEADDR(TLU_BASEADDR),
     .HIGHADDR(TLU_HIGHADDR),
     .DIVISOR(8),
-    .ABUSWIDTH(32)
+    .ABUSWIDTH(32),
+    .TLU_TRIGGER_MAX_CLOCK_CYCLES(32)
 ) i_tlu_controller (
     .BUS_CLK(BUS_CLK),
     .BUS_RST(BUS_RST),
