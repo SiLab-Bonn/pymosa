@@ -1,4 +1,4 @@
-localparam VERSION = 8'd01;
+localparam VERSION = 8'd3;
 
 module mmc3_m26_eth(
     input wire RESET_N,
