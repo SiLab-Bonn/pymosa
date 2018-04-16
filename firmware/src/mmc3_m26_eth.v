@@ -1,4 +1,12 @@
-localparam VERSION = 8'd3;
+/**
+ * ------------------------------------------------------------
+ * Copyright (c) All rights reserved
+ * SiLab, Institute of Physics, University of Bonn
+ * ------------------------------------------------------------
+ */
+
+`timescale 1ps / 1ps
+`default_nettype none
 
 module mmc3_m26_eth(
     input wire RESET_N,
@@ -37,9 +45,13 @@ module mmc3_m26_eth(
 
 );
 
+// ***********************************************************
+// *** change version number in case of functional changes ***
+// ***********************************************************
+localparam VERSION = 8'd3;
 
 wire RST;
-wire BUS_CLK_PLL, CLK250PLL, CLK125PLLTX, CLK125PLLTX90, CLK125PLLRX;
+wire CLK250PLL, CLK125PLLTX, CLK125PLLTX90;
 wire PLL_FEEDBACK, LOCKED;
 
 PLLE2_BASE #(
@@ -64,91 +76,79 @@ PLLE2_BASE #(
     .CLKOUT3_DUTY_CYCLE(0.5), // Duty cycle for CLKOUT0 (0.001-0.999).
     .CLKOUT3_PHASE(90.0),      // Phase offset for CLKOUT0 (-360.000-360.000).
 
-    .CLKOUT4_DIVIDE(8),     // Divide amount for CLKOUT0 (1-128)
-    .CLKOUT4_DUTY_CYCLE(0.5), // Duty cycle for CLKOUT0 (0.001-0.999).
-    .CLKOUT4_PHASE(-5.6),      // Phase offset for CLKOUT0 (-360.000-360.000).
-    //-65 -> 0?; - 45 -> 39;  -25 -> 100; -5 -> 0;
-
     .DIVCLK_DIVIDE(1),        // Master division value, (1-56)
     .REF_JITTER1(0.0),        // Reference input jitter in UI, (0.000-0.999).
     .STARTUP_WAIT("FALSE")     // Delay DONE until PLL Locks, ("TRUE"/"FALSE")
- )
- PLLE2_BASE_inst (
+) PLLE2_BASE_inst (
+    .CLKOUT0(),
+    .CLKOUT1(CLK250PLL),
+    .CLKOUT2(CLK125PLLTX),
+    .CLKOUT3(CLK125PLLTX90),
+    .CLKOUT4(),
+    .CLKOUT5(),
 
-     .CLKOUT0(),
-     .CLKOUT1(CLK250PLL),
+    .CLKFBOUT(PLL_FEEDBACK),
+    .LOCKED(LOCKED), // 1-bit output: LOCK
 
-     .CLKOUT2(CLK125PLLTX),
-     .CLKOUT3(CLK125PLLTX90),
-     .CLKOUT4(CLK125PLLRX),
+    // Input 100 MHz clock
+    .CLKIN1(clkin),
 
-     .CLKOUT5(),
+    // Control Ports
+    .PWRDWN(0),
+    .RST(!RESET_N),
 
-     .CLKFBOUT(PLL_FEEDBACK),
-
-     .LOCKED(LOCKED), // 1-bit output: LOCK
-
-     // Input 100 MHz clock
-     .CLKIN1(clkin),
-
-     // Control Ports
-     .PWRDWN(0),
-     .RST(!RESET_N),
-
-     // Feedback
-     .CLKFBIN(PLL_FEEDBACK)
- );
+    // Feedback
+    .CLKFBIN(PLL_FEEDBACK)
+);
 
 wire PLL_FEEDBACK2, LOCKED2;
 wire CLK160_PLL, CLK320_PLL, CLK40_PLL, CLK16_PLL, BUS_CLK_PLL;
 PLLE2_BASE #(
-     .BANDWIDTH("OPTIMIZED"),
-     .CLKFBOUT_MULT(16),
-     .CLKFBOUT_PHASE(0.0),
-     .CLKIN1_PERIOD(10.000),
+    .BANDWIDTH("OPTIMIZED"),
+    .CLKFBOUT_MULT(16),
+    .CLKFBOUT_PHASE(0.0),
+    .CLKIN1_PERIOD(10.000),
 
-     .CLKOUT0_DIVIDE(10),
-     .CLKOUT0_DUTY_CYCLE(0.5),
-     .CLKOUT0_PHASE(0.0),
+    .CLKOUT0_DIVIDE(10),
+    .CLKOUT0_DUTY_CYCLE(0.5),
+    .CLKOUT0_PHASE(0.0),
 
-     .CLKOUT1_DIVIDE(40),
-     .CLKOUT1_DUTY_CYCLE(0.5),
-     .CLKOUT1_PHASE(0.0),
+    .CLKOUT1_DIVIDE(40),
+    .CLKOUT1_DUTY_CYCLE(0.5),
+    .CLKOUT1_PHASE(0.0),
 
-     .CLKOUT2_DIVIDE(5),
-     .CLKOUT2_DUTY_CYCLE(0.5),
-     .CLKOUT2_PHASE(0.0),
+    .CLKOUT2_DIVIDE(5),
+    .CLKOUT2_DUTY_CYCLE(0.5),
+    .CLKOUT2_PHASE(0.0),
 
-     .CLKOUT3_DIVIDE(100),
-     .CLKOUT3_DUTY_CYCLE(0.5),
-     .CLKOUT3_PHASE(0.0),
+    .CLKOUT3_DIVIDE(100),
+    .CLKOUT3_DUTY_CYCLE(0.5),
+    .CLKOUT3_PHASE(0.0),
 
-     .CLKOUT4_DIVIDE(12),
-     .CLKOUT4_DUTY_CYCLE(0.5),
-     .CLKOUT4_PHASE(0.0),
+    .CLKOUT4_DIVIDE(12),
+    .CLKOUT4_DUTY_CYCLE(0.5),
+    .CLKOUT4_PHASE(0.0),
 
-     .DIVCLK_DIVIDE(1),
-     .REF_JITTER1(0.0),
-     .STARTUP_WAIT("FALSE")
-)
-PLLE2_BASE_inst_2 (
+    .DIVCLK_DIVIDE(1),
+    .REF_JITTER1(0.0),
+    .STARTUP_WAIT("FALSE")
+) PLLE2_BASE_inst_2 (
+    .CLKOUT0(CLK160_PLL),
+    .CLKOUT1(CLK40_PLL),
+    .CLKOUT2(CLK320_PLL),
+    .CLKOUT3(CLK16_PLL),
+    .CLKOUT4(BUS_CLK_PLL),
+    .CLKOUT5(),
 
-      .CLKOUT0(CLK160_PLL),
-      .CLKOUT1(CLK40_PLL),
-      .CLKOUT2(CLK320_PLL),
-      .CLKOUT3(CLK16_PLL),
-      .CLKOUT4(BUS_CLK_PLL),
-      .CLKOUT5(),
+    .CLKFBOUT(PLL_FEEDBACK2),
+    .LOCKED(LOCKED2), // 1-bit output: LOCK
 
-      .CLKFBOUT(PLL_FEEDBACK2),
-      .LOCKED(LOCKED2), // 1-bit output: LOCK
+    .CLKIN1(clkin),
 
-      .CLKIN1(clkin),
+    .PWRDWN(0),
+    .RST(!RESET_N),
 
-      .PWRDWN(0),
-      .RST(!RESET_N),
-
-      .CLKFBIN(PLL_FEEDBACK2)
+    .CLKFBIN(PLL_FEEDBACK2)
 );
 
 
@@ -662,7 +662,6 @@ endgenerate
 wire TDC_FIFO_READ;
 wire TDC_FIFO_EMPTY;
 wire [31:0] TDC_FIFO_DATA;
-wire [31:0] TIMESTAMP;
 wire LEMO_TRIGGER_FROM_TDC;
 wire TDC_IN_FROM_TDC;
 wire RJ45_HITOR;
@@ -740,8 +739,6 @@ wire [6:0] M26_MKD_NC;
 reg [31:0] M26_MKD_reg;
 reg M26_MKD_EN_SYNC;
 
-
-wire M26_MKD_EN; //TODO add external enable of mimosa_rx
 gpio #(
     .BASEADDR(GPIO_MKD_BASEADDR),
     .HIGHADDR(GPIO_MKD_HIGHADDR),
