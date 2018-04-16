@@ -23,6 +23,8 @@ from m26_readout import M26Readout
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+REQUIRED_FW_VERSION = 3  # required version for mmc3_m26_eth.v
+
 
 class m26():
     ''' Mimosa26 telescope readout with MMC3 hardware.
@@ -31,8 +33,6 @@ class m26():
     - Remove not used Mimosa26 planes by commenting out the drivers in the DUT file (i.e. m26.yaml).
     - Set up trigger in DUT configuration file (i.e. m26_configuration.yaml).
     '''
-    VERSION = 1  # required version for mmc3_m26_eth.v
-
     def __init__(self, conf=None):
         if conf is None:
             conf = os.path.join(os.path.dirname(os.path.abspath(__file__)), "m26.yaml")
@@ -47,7 +47,15 @@ class m26():
         self.dut.init(init_conf=init_conf)
         self.telescope_conf = init_conf
 
+        # check firmware version
+        fw_version = self.dut['ETH'].read(0x0000, 1)[0]
+        logging.info("MMC3 firmware version: %s" % (fw_version))
+        if fw_version != REQUIRED_FW_VERSION:
+            raise Exception("MMC3 firmware version does not satisfy version requirements (read: %s, require: %s)" % (fw_version, REQUIRED_FW_VERSION))
+
         # default configuration
+        # use self.telescope_conf to store conf dict to telescope data file
+        self.telescope_conf["fw_version"] = fw_version
         self.m26_configuration_file = self.telescope_conf.get("m26_configuration_file", None)
         self.m26_jtag_configuration = self.telescope_conf.get('m26_jtag_configuration', True)  # default True
         self.no_data_timeout = self.telescope_conf.get('no_data_timeout', 0)  # default None: no data timeout
@@ -56,12 +64,6 @@ class m26():
         self.send_data = self.telescope_conf.get('send_data', None)  # default None: do not send data to online monitor
         self.working_dir = os.path.join(os.getcwd(), self.telescope_conf.get("output_folder", "telescope_data"))
         self.output_filename = self.telescope_conf.get('filename', None)  # default None: filename is generated
-
-        # check firmware version
-        fw_version = self.dut['ETH'].read(0x0000, 1)[0]
-        logging.info("MMC3 firmware version: %s" % (fw_version))
-        if fw_version != self.VERSION:
-            raise Exception("MMC3 firmware version does not satisfy version requirements (read: %s, require: %s)" % (fw_version, self.VERSION))
 
         if not os.path.exists(self.working_dir):
             os.makedirs(self.working_dir)
