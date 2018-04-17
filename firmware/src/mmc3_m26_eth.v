@@ -186,8 +186,7 @@ wire   link_status;
 wire  [1:0] clock_speed;
 wire   duplex_status;
 
-rgmii_io rgmii
-(
+rgmii_io rgmii(
     .rgmii_txd(rgmii_txd),
     .rgmii_tx_ctl(rgmii_tx_ctl),
     .rgmii_txc(rgmii_txc),
@@ -368,9 +367,9 @@ assign BUS_DATA[7:0] = READ_VER ? BUS_DATA_OUT_REG : 8'hzz;
 
 // -------  USER MODULES  ------- //
 ///////////////////// M26 JTAG
-wire M26_TCK, M26_TMS,M26_TDI,M26_TDO,M26_TMS_INV,M26_TDI_INV, M26_TDO_INV;
+wire M26_TCK, M26_TMS, M26_TDI, M26_TDO, M26_TMS_INV, M26_TDI_INV, M26_TDO_INV;
 wire M26_RESETB;
-wire M26_CLK_START, M26_CLK_SPEAK,M26_CLK_RESET, M26_CLK_CLK;
+wire M26_CLK_START, M26_CLK_SPEAK, M26_CLK_RESET, M26_CLK_CLK;
 wire [3:0] GPIO_JTAG_NC;
 OBUFDS #(
   .IOSTANDARD("LVDS_25"),
@@ -456,7 +455,7 @@ gpio #(
     .BUS_DATA(BUS_DATA),
     .BUS_RD(BUS_RD),
     .BUS_WR(BUS_WR),
-    .IO({LED[5:3],M26_TDO,M26_TDI_INV,M26_TMS_INV,M26_TCK,M26_RESETB})
+    .IO({LED[5:3], M26_TDO, M26_TDI_INV, M26_TMS_INV, M26_TCK, M26_RESETB})
 );
 
 
@@ -474,7 +473,7 @@ gpio #(
     .BUS_DATA(BUS_DATA),
     .BUS_RD(BUS_RD),
     .BUS_WR(BUS_WR),
-    .IO({GPIO_JTAG_NC,M26_CLK_SPEAK, M26_CLK_RESET,M26_CLK_START, M26_CLK_CLK})
+    .IO({GPIO_JTAG_NC, M26_CLK_SPEAK, M26_CLK_RESET, M26_CLK_START, M26_CLK_CLK})
 );
 
 wire TRIGGER_ENABLE; // from CMD FSM
@@ -596,20 +595,7 @@ generate
             .IB(M26_DATA1_N[ch])
         );
 
-        /*
-        wire [2:0] SEL_M26_CLK;
-        reg [7:0] M26_DLY_SR [2:0];
-        assign SEL_M26_CLK = 4;
-
-        reg [7:0] M26_CLK_SR;
-        always@(posedge CLK320)
-            M26_DLY_SR <= {CLK_SR[6:0],M26_CLK_BUFG_};
-
-        always@(posedge CLK320)
-            M26_CLK_BUFG[ch] <= M26_CLK_SR[ch][SEL_M26_CLK[ch]];
-        */
-
-        BUFG BUFG_inst_M26_CLK (  .O(M26_CLK_BUFG[ch]),  .I(M26_CLK[ch]) );
+        BUFG BUFG_inst_M26_CLK(.O(M26_CLK_BUFG[ch]), .I(M26_CLK[ch]));
 
         assign M26_CLK_INV[ch] = ~M26_CLK[ch];
 
@@ -634,8 +620,7 @@ generate
             .ABUSWIDTH(32),
             .HEADER(8'h20),
             .IDENTYFIER(ch+1)
-        ) i_m26_rx
-        (
+        ) i_m26_rx (
             .CLK_RX(M26_CLK_BUFG[ch]),
             .MKD_RX(M26_MKD[ch]),
             .DATA_RX({M26_DATA1[ch], M26_DATA0[ch]}),
