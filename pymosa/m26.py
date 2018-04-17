@@ -344,7 +344,16 @@ class m26():
 
 
 if __name__ == '__main__':
-    from pymosa import __version__ as pymosa_version
+    try:
+        from pymosa import __version__ as pymosa_version
+    except ImportError:
+        try:
+            with open(os.path.join(os.path.split(os.path.split(os.path.abspath(__file__))[0])[0], 'VERSION')) as version_file:
+                pymosa_version = version_file.read().strip()
+        except IOError:
+            raise
+            pymosa_version = "(local)"
+
     import argparse
     parser = argparse.ArgumentParser(description='Pymosa %s\nExample: python m26.py --no-m26-jtag-configuration --filename <output filename>' % pymosa_version, formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('-f', '--filename', type=str, metavar='<output filename>', action='store', help='filename of the telescope data file')
