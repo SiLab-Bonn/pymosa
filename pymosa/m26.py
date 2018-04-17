@@ -23,7 +23,7 @@ from m26_readout import M26Readout
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-REQUIRED_FW_VERSION = 3  # required version for mmc3_m26_eth.v
+REQUIRED_FW_VERSION = 4  # required version for mmc3_m26_eth.v
 
 
 class m26():

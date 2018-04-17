@@ -29,15 +29,15 @@ module mmc3_m26_eth(
     input wire [5:0] M26_CLK_P, M26_CLK_N, M26_MKD_P, M26_MKD_N,
     input wire [5:0] M26_DATA1_P, M26_DATA1_N, M26_DATA0_P, M26_DATA0_N,
 
-    output wire M26_TCK_P,M26_TCK_N,
-    output wire M26_TMS_P,M26_TMS_N,
-    output wire M26_TDI_P,M26_TDI_N,
-    input wire M26_TDO_P,M26_TDO_N,
+    output wire M26_TCK_P, M26_TCK_N,
+    output wire M26_TMS_P, M26_TMS_N,
+    output wire M26_TDI_P, M26_TDI_N,
+    input wire M26_TDO_P, M26_TDO_N,
 
-    output wire M26_CLK_CLK_P,M26_CLK_CLK_N,
-    output wire M26_CLK_START_P,M26_CLK_START_N,
-    output wire M26_CLK_RESET_P,M26_CLK_RESET_N,
-    output wire M26_CLK_SPEAK_P,M26_CLK_SPEAK_N,
+    output wire M26_CLK_CLK_P, M26_CLK_CLK_N,
+    output wire M26_CLK_START_P, M26_CLK_START_N,
+    output wire M26_CLK_RESET_P, M26_CLK_RESET_N,
+    output wire M26_CLK_SPEAK_P, M26_CLK_SPEAK_N,
 
     output wire RJ45_BUSY_LEMO_TX1, RJ45_CLK_LEMO_TX0,
     input wire RJ45_TRIGGER, RJ45_RESET,
@@ -48,47 +48,38 @@ module mmc3_m26_eth(
 // ***********************************************************
 // *** change version number in case of functional changes ***
 // ***********************************************************
-localparam VERSION = 8'd3;
+localparam VERSION = 8'd4;
 
 wire RST;
-wire CLK250PLL, CLK125PLLTX, CLK125PLLTX90;
+wire CLK125PLLTX, CLK125PLLTX90;
 wire PLL_FEEDBACK, LOCKED;
-
 PLLE2_BASE #(
     .BANDWIDTH("OPTIMIZED"),  // OPTIMIZED, HIGH, LOW
     .CLKFBOUT_MULT(10),       // Multiply value for all CLKOUT, (2-64)
     .CLKFBOUT_PHASE(0.0),     // Phase offset in degrees of CLKFB, (-360.000-360.000).
     .CLKIN1_PERIOD(10.000),      // Input clock period in ns to ps resolution (i.e. 33.333 is 30 MHz).
 
-    .CLKOUT0_DIVIDE(7),     // Divide amount for CLKOUT0 (1-128)
+    .CLKOUT0_DIVIDE(8),     // Divide amount for CLKOUT0 (1-128)
     .CLKOUT0_DUTY_CYCLE(0.5), // Duty cycle for CLKOUT0 (0.001-0.999).
     .CLKOUT0_PHASE(0.0),      // Phase offset for CLKOUT0 (-360.000-360.000).
 
-    .CLKOUT1_DIVIDE(4),     // Divide amount for CLKOUT0 (1-128)
+    .CLKOUT1_DIVIDE(8),     // Divide amount for CLKOUT0 (1-128)
     .CLKOUT1_DUTY_CYCLE(0.5), // Duty cycle for CLKOUT0 (0.001-0.999).
-    .CLKOUT1_PHASE(0.0),      // Phase offset for CLKOUT0 (-360.000-360.000).
-
-    .CLKOUT2_DIVIDE(8),     // Divide amount for CLKOUT0 (1-128)
-    .CLKOUT2_DUTY_CYCLE(0.5), // Duty cycle for CLKOUT0 (0.001-0.999).
-    .CLKOUT2_PHASE(0.0),      // Phase offset for CLKOUT0 (-360.000-360.000).
-
-    .CLKOUT3_DIVIDE(8),     // Divide amount for CLKOUT0 (1-128)
-    .CLKOUT3_DUTY_CYCLE(0.5), // Duty cycle for CLKOUT0 (0.001-0.999).
-    .CLKOUT3_PHASE(90.0),      // Phase offset for CLKOUT0 (-360.000-360.000).
+    .CLKOUT1_PHASE(90.0),      // Phase offset for CLKOUT0 (-360.000-360.000).
 
     .DIVCLK_DIVIDE(1),        // Master division value, (1-56)
     .REF_JITTER1(0.0),        // Reference input jitter in UI, (0.000-0.999).
     .STARTUP_WAIT("FALSE")     // Delay DONE until PLL Locks, ("TRUE"/"FALSE")
 ) PLLE2_BASE_inst (
-    .CLKOUT0(),
-    .CLKOUT1(CLK250PLL),
-    .CLKOUT2(CLK125PLLTX),
-    .CLKOUT3(CLK125PLLTX90),
+    .CLKOUT0(CLK125PLLTX),
+    .CLKOUT1(CLK125PLLTX90),
+    .CLKOUT2(),
+    .CLKOUT3(),
     .CLKOUT4(),
     .CLKOUT5(),
 
     .CLKFBOUT(PLL_FEEDBACK),
-    .LOCKED(LOCKED), // 1-bit output: LOCK
+    .LOCKED(LOCKED),     // 1-bit output: LOCK
 
     // Input 100 MHz clock
     .CLKIN1(clkin),
@@ -101,43 +92,31 @@ PLLE2_BASE #(
     .CLKFBIN(PLL_FEEDBACK)
 );
 
+wire CLK40_PLL, BUS_CLK_PLL;
 wire PLL_FEEDBACK2, LOCKED2;
-wire CLK160_PLL, CLK320_PLL, CLK40_PLL, CLK16_PLL, BUS_CLK_PLL;
 PLLE2_BASE #(
     .BANDWIDTH("OPTIMIZED"),
     .CLKFBOUT_MULT(16),
     .CLKFBOUT_PHASE(0.0),
     .CLKIN1_PERIOD(10.000),
 
-    .CLKOUT0_DIVIDE(10),
+    .CLKOUT0_DIVIDE(40),
     .CLKOUT0_DUTY_CYCLE(0.5),
     .CLKOUT0_PHASE(0.0),
 
-    .CLKOUT1_DIVIDE(40),
+    .CLKOUT1_DIVIDE(12),
     .CLKOUT1_DUTY_CYCLE(0.5),
     .CLKOUT1_PHASE(0.0),
-
-    .CLKOUT2_DIVIDE(5),
-    .CLKOUT2_DUTY_CYCLE(0.5),
-    .CLKOUT2_PHASE(0.0),
-
-    .CLKOUT3_DIVIDE(100),
-    .CLKOUT3_DUTY_CYCLE(0.5),
-    .CLKOUT3_PHASE(0.0),
-
-    .CLKOUT4_DIVIDE(12),
-    .CLKOUT4_DUTY_CYCLE(0.5),
-    .CLKOUT4_PHASE(0.0),
 
     .DIVCLK_DIVIDE(1),
     .REF_JITTER1(0.0),
     .STARTUP_WAIT("FALSE")
 ) PLLE2_BASE_inst_2 (
-    .CLKOUT0(CLK160_PLL),
-    .CLKOUT1(CLK40_PLL),
-    .CLKOUT2(CLK320_PLL),
-    .CLKOUT3(CLK16_PLL),
-    .CLKOUT4(BUS_CLK_PLL),
+    .CLKOUT0(CLK40_PLL),
+    .CLKOUT1(BUS_CLK_PLL),
+    .CLKOUT2(),
+    .CLKOUT3(),
+    .CLKOUT4(),
     .CLKOUT5(),
 
     .CLKFBOUT(PLL_FEEDBACK2),
@@ -152,18 +131,14 @@ PLLE2_BASE #(
 );
 
 
-wire CLK160, CLK40, CLK320, CLK16, BUS_CLK;
-BUFG BUFG_inst_160 (.O(CLK160), .I(CLK160_PLL) );
-BUFG BUFG_inst_40 (.O(CLK40), .I(CLK40_PLL) );
-BUFG BUFG_inst_320 (.O(CLK320), .I(CLK320_PLL) );
-BUFG BUFG_inst_16 (.O(CLK16), .I(CLK16_PLL) );
-BUFG BUFG_inst_BUS_CLK (.O(BUS_CLK), .I(BUS_CLK_PLL) );
-//assign BUS_CLK = CLK160;
+wire CLK40, BUS_CLK;
+BUFG BUFG_inst_40(.O(CLK40), .I(CLK40_PLL));
+BUFG BUFG_inst_BUS_CLK(.O(BUS_CLK), .I(BUS_CLK_PLL));
 
 wire CLK125TX, CLK125TX90, CLK125RX;
-BUFG BUFG_inst_CLK125TX (  .O(CLK125TX),  .I(CLK125PLLTX) );
-BUFG BUFG_inst_CLK125TX90 (  .O(CLK125TX90),  .I(CLK125PLLTX90) );
-BUFG BUFG_inst_CLK125RX (  .O(CLK125RX),  .I(rgmii_rxc) );
+BUFG BUFG_inst_CLK125TX(.O(CLK125TX), .I(CLK125PLLTX));
+BUFG BUFG_inst_CLK125TX90(.O(CLK125TX90), .I(CLK125PLLTX90));
+BUFG BUFG_inst_CLK125RX(.O(CLK125RX), .I(rgmii_rxc));
 
 assign RST = !RESET_N | !LOCKED | !LOCKED2;
 
@@ -207,7 +182,7 @@ rgmii_io rgmii(
     .eth_clock_speed(clock_speed),
     .eth_duplex_status(duplex_status),
 
-                              // FOllowing are generated by DCMs
+    // Following are generated by DCMs
     .tx_rgmii_clk_int(CLK125TX),     // Internal RGMII transmitter clock.
     .tx_rgmii_clk90_int(CLK125TX90),   // Internal RGMII transmitter clock w/ 90 deg phase
     .rx_rgmii_clk_int(CLK125RX),     // Internal RGMII receiver clock
@@ -340,11 +315,8 @@ localparam M26_RX_HIGHADDR = 32'ha00f-1;
 localparam GPIO_BASEADDR = 32'hb000;
 localparam GPIO_HIGHADDR = 32'hb01f;
 
-localparam GPIO_MKD_BASEADDR = 32'hb020;
-localparam GPIO_MKD_HIGHADDR = 32'hb03f;
-
-localparam GPIO_CLK_BASEADDR = 32'hb040;
-localparam GPIO_CLK_HIGHADDR = 32'hb04f;
+localparam GPIO_CLK_BASEADDR = 32'hb020;
+localparam GPIO_CLK_HIGHADDR = 32'hb02f;
 
 // VERSION READBACk
 reg [7:0] BUS_DATA_OUT_REG;
@@ -550,7 +522,6 @@ wire [5:0] FIFO_READ_M26_RX;
 wire [5:0] FIFO_EMPTY_M26_RX;
 wire [31:0] FIFO_DATA_M26_RX [5:0];
 wire [5:0] M26_CLK_INV;
-wire [5:0] M26_BUSY;
 genvar ch;
 generate
     for (ch = 0; ch < 6; ch = ch + 1) begin: m26_gen
@@ -715,50 +686,10 @@ clock_divider #(
 );
 
 assign LED[7:6] = 2'hf;
-assign LED[0] = 0;
-assign LED[1] = 0;
-assign LED[2] = 0;
+assign LED[0] = CLK_1HZ;
+assign LED[1] = FIFO_FULL;
+assign LED[2] = |LOST_ERROR;
 
-wire M26_MKD_EN;
-wire [6:0] M26_MKD_NC;
-reg [31:0] M26_MKD_reg;
-reg M26_MKD_EN_SYNC;
-
-gpio #(
-    .BASEADDR(GPIO_MKD_BASEADDR),
-    .HIGHADDR(GPIO_MKD_HIGHADDR),
-    .ABUSWIDTH(32),
-    .IO_WIDTH(8),
-    .IO_DIRECTION(8'hFF),
-    .IO_TRI(8'h00)
-) i_gpio_mkd (
-    .BUS_CLK(BUS_CLK),
-    .BUS_RST(BUS_RST),
-    .BUS_ADD(BUS_ADD),
-    .BUS_DATA(BUS_DATA),
-    .BUS_RD(BUS_RD),
-    .BUS_WR(BUS_WR),
-    .IO({M26_MKD_NC,M26_MKD_EN})
-);
-
-always@(posedge M26_CLK_INV[0]) begin
-     M26_MKD_reg[31:0] <= {M26_MKD_reg[30:0],M26_MKD[0]};
-     M26_MKD_EN_SYNC <= (M26_MKD_EN | M26_BUSY[0]);
-end
-
-assign PMOD[5:4]= 2'h5;
-assign PMOD[0]= (M26_MKD_reg!=0) & M26_MKD_EN_SYNC;
-assign PMOD[1]= (M26_MKD_reg!=0) & M26_MKD_EN_SYNC;
-assign PMOD[2]= (M26_MKD_reg!=0) & M26_MKD_EN_SYNC;
-assign PMOD[3]= (M26_MKD_reg!=0) & M26_MKD_EN_SYNC;
-
-assign PMOD[6]= CLK_1HZ;
-assign PMOD[7]= M26_MKD_EN_SYNC;
-
-
-//ila_0 ila(
-//    .clk(CLK320),
-//    .probe0({M26_DATA1, M26_DATA0, M26_MKD, M26_CLK})
-//);
+assign PMOD[7:0] = 8'b0;
 
 endmodule

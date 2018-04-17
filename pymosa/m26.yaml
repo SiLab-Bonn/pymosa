@@ -6,7 +6,7 @@
 #
 
 name    : m26_eth
-version : 3.0
+version : 4.0
 
 transfer_layer:
   - name  : ETH
@@ -72,7 +72,7 @@ hw_drivers:
   - name      : GPIO_CLK
     type      : gpio
     interface : ETH
-    base_addr : 0xb040
+    base_addr : 0xb020
     size      : 8
 
 registers:
