@@ -52,6 +52,8 @@ class m26():
         logging.info("MMC3 firmware version: %s" % (fw_version))
         if fw_version != REQUIRED_FW_VERSION:
             raise Exception("MMC3 firmware version does not satisfy version requirements (read: %s, require: %s)" % (fw_version, REQUIRED_FW_VERSION))
+        if int(self.dut.version) != REQUIRED_FW_VERSION:
+            raise Exception("MMC3 firmware version does not match DUT configuration file (read: %s, require: %s)" % (int(self.dut.version), REQUIRED_FW_VERSION))
 
         # default configuration
         # use self.telescope_conf to store conf dict to telescope data file
