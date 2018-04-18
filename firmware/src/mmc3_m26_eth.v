@@ -318,23 +318,23 @@ localparam GPIO_HIGHADDR = 32'hb01f;
 localparam GPIO_CLK_BASEADDR = 32'hb020;
 localparam GPIO_CLK_HIGHADDR = 32'hb02f;
 
-// VERSION READBACk
-reg [7:0] BUS_DATA_OUT_REG;
+// VERSION READBACK
+reg [7:0] BUS_DATA_OUT;
 always @ (posedge BUS_CLK) begin
     if(BUS_RD) begin
         if(BUS_ADD == 0)
-            BUS_DATA_OUT_REG <= VERSION[7:0];
+            BUS_DATA_OUT <= VERSION[7:0];
     end
 end
 
-reg READ_VER;
+reg DATA_READ;
 always @ (posedge BUS_CLK)
     if(BUS_RD & BUS_ADD < 2)
-        READ_VER <= 1;
+        DATA_READ <= 1;
     else
-        READ_VER <= 0;
+        DATA_READ <= 0;
 
-assign BUS_DATA[7:0] = READ_VER ? BUS_DATA_OUT_REG : 8'hzz;
+assign BUS_DATA[7:0] = DATA_READ ? BUS_DATA_OUT : 8'hzz;
 
 
 // -------  USER MODULES  ------- //
