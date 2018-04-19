@@ -6,6 +6,7 @@
 #
 
 import logging
+import signal
 import os
 from time import time, sleep, strftime
 from contextlib import contextmanager
@@ -201,41 +202,39 @@ class m26():
         '''
         with self.readout():
             got_data = False
-            self.stop_scan = False
             start = time()
             while not self.stop_scan:
-                try:
-                    sleep(1.0)
-                    if not got_data:
-                        if self.m26_readout.data_words_per_second() > 0:
-                            got_data = True
-                            logging.info('Taking data...')
-                            if self.max_triggers:
-                                self.progressbar = progressbar.ProgressBar(widgets=['', progressbar.Percentage(), ' ', progressbar.Bar(marker='*', left='|', right='|'), ' ', progressbar.AdaptiveETA()], maxval=self.max_triggers, poll=10, term_width=80).start()
-                            else:
-                                self.progressbar = progressbar.ProgressBar(widgets=['', progressbar.Percentage(), ' ', progressbar.Bar(marker='*', left='|', right='|'), ' ', progressbar.Timer()], maxval=self.scan_timeout, poll=10, term_width=80).start()
-                    else:
-                        triggers = self.dut['TLU']['TRIGGER_COUNTER']
-                        try:
-                            if self.max_triggers:
-                                self.progressbar.update(triggers)
-                            else:
-                                self.progressbar.update(time() - start)
-                        except ValueError:
-                            pass
-                        if self.max_triggers and triggers >= self.max_triggers:
-                            self.stop_scan = True
-                            self.progressbar.finish()
-                            logging.info('Trigger limit was reached: %i' % self.max_triggers)
-                except KeyboardInterrupt:  # react on keyboard interupt
-                    logging.info('Scan was stopped due to keyboard interrupt')
-                    self.stop_scan = True
+                sleep(1.0)
+                if not got_data:
+                    if self.m26_readout.data_words_per_second() > 0:
+                        got_data = True
+                        logging.info('Taking data...')
+                        if self.max_triggers:
+                            self.progressbar = progressbar.ProgressBar(widgets=['', progressbar.Percentage(), ' ', progressbar.Bar(marker='*', left='|', right='|'), ' ', progressbar.AdaptiveETA()], maxval=self.max_triggers, poll=10, term_width=80).start()
+                        else:
+                            self.progressbar = progressbar.ProgressBar(widgets=['', progressbar.Percentage(), ' ', progressbar.Bar(marker='*', left='|', right='|'), ' ', progressbar.Timer()], maxval=self.scan_timeout, poll=10, term_width=80).start()
+                else:
+                    triggers = self.dut['TLU']['TRIGGER_COUNTER']
+                    try:
+                        if self.max_triggers:
+                            self.progressbar.update(triggers)
+                        else:
+                            self.progressbar.update(time() - start)
+                    except ValueError:
+                        pass
+                    if self.max_triggers and triggers >= self.max_triggers:
+                        self.stop_scan = True
+                        self.progressbar.finish()
+                        logging.info('Trigger limit was reached: %i' % self.max_triggers)
 
         logging.info('Total amount of triggers collected: %d', self.dut['TLU']['TRIGGER_COUNTER'])
 
     def start(self):
         '''Start Mimosa26 telescope scan.
         '''
+        self.stop_scan = False
+        signal.signal(signal.SIGINT, self._signal_handler)
+        logging.info('Press Ctrl-C to stop run')
 
         # check for filename that is not in use
         while True:
@@ -363,6 +362,11 @@ class m26():
             logging.error('%s%s Aborting run...', msg, msg[-1])
         else:
             logging.error('Aborting run...')
+        self.stop_scan = True
+
+    def _signal_handler(self, signum, frame):
+        signal.signal(signal.SIGINT, signal.SIG_DFL)  # setting default handler... pressing Ctrl-C a second time will kill application
+        logging.info('Pressed Ctrl-C')
         self.stop_scan = True
 
 
