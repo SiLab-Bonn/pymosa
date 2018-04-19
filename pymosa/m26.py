@@ -64,7 +64,10 @@ class m26():
         self.scan_timeout = self.telescope_conf.get('scan_timeout', 0)  # default 0: no scan timeout
         self.max_triggers = self.telescope_conf.get('max_triggers', 0)  # default 0: infinity triggers
         self.send_data = self.telescope_conf.get('send_data', None)  # default None: do not send data to online monitor
-        self.working_dir = os.path.join(os.getcwd(), self.telescope_conf.get("output_folder", "telescope_data"))
+        self.working_dir = self.telescope_conf.get("output_folder", None)
+        if not self.working_dir:
+            self.working_dir = os.path.join(os.getcwd(), "telescope_data")
+        self.working_dir = os.path.normpath(self.working_dir.replace('\\', '/')) 
         self.output_filename = self.telescope_conf.get('filename', None)  # default None: filename is generated
 
         if not os.path.exists(self.working_dir):
