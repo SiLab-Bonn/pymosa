@@ -58,29 +58,25 @@ class m26():
         # default configuration
         # use self.telescope_conf to store conf dict to telescope data file
         self.telescope_conf["fw_version"] = fw_version
-        self.m26_configuration_file = self.telescope_conf.get("m26_configuration_file", None)
-        self.m26_jtag_configuration = self.telescope_conf.get('m26_jtag_configuration', True)  # default True
-        self.no_data_timeout = self.telescope_conf.get('no_data_timeout', 0)  # default None: no data timeout
-        self.scan_timeout = self.telescope_conf.get('scan_timeout', 0)  # default 0: no scan timeout
-        self.max_triggers = self.telescope_conf.get('max_triggers', 0)  # default 0: infinity triggers
-        self.send_data = self.telescope_conf.get('send_data', None)  # default None: do not send data to online monitor
+        self.run_id = self.telescope_conf.get('run_id', 'M26_TELESCOPE')
         self.working_dir = self.telescope_conf.get("output_folder", None)
         if not self.working_dir:
             self.working_dir = os.path.join(os.getcwd(), "telescope_data")
         self.working_dir = os.path.normpath(self.working_dir.replace('\\', '/')) 
         self.output_filename = self.telescope_conf.get('filename', None)  # default None: filename is generated
+        if self.output_filename:
+            self.output_filename = os.path.basename(self.output_filename)
+        self.run_number = self.telescope_conf.get('run_number', None)
+        self.m26_configuration_file = self.telescope_conf.get('m26_configuration_file', None)
+        self.m26_jtag_configuration = self.telescope_conf.get('m26_jtag_configuration', True)  # default True
+        self.no_data_timeout = self.telescope_conf.get('no_data_timeout', 0)  # default None: no data timeout
+        self.scan_timeout = self.telescope_conf.get('scan_timeout', 0)  # default 0: no scan timeout
+        self.max_triggers = self.telescope_conf.get('max_triggers', 0)  # default 0: infinity triggers
+        self.send_data = self.telescope_conf.get('send_data', None)  # default None: do not send data to online monitor
 
         if not os.path.exists(self.working_dir):
             os.makedirs(self.working_dir)
         logger.info("Storing telescope data in %s" % self.working_dir)
-
-        self.scan_id = 'M26_TELESCOPE'
-
-        if self.output_filename is None:
-            self.run_name = strftime("%Y%m%d_%H%M%S_") + self.scan_id
-            self.output_filename = os.path.join(self.working_dir, self.run_name)
-        else:
-            self.run_name = os.path.basename(os.path.realpath(self.output_filename))
 
         # configure Mimosa26 sensors
         if configure_m26:
@@ -240,7 +236,29 @@ class m26():
     def start(self):
         '''Start Mimosa26 telescope scan.
         '''
-        self.fh = logging.FileHandler(self.output_filename + '.log')
+
+        # check for filename that is not in use
+        while True:
+            if not self.output_filename and self.run_number:
+                filename = 'run_' + str(self.run_number) + '_' + self.run_id
+
+            else:
+                if self.output_filename:
+                    filename = self.output_filename
+                else:
+                    filename = strftime("%Y%m%d-%H%M%S") + '_' + self.run_id
+            if filename in [os.path.splitext(f)[0] for f in os.listdir(self.working_dir) if os.path.isfile(os.path.join(self.working_dir, f))]:
+                if not self.output_filename and self.run_number:
+                    self.run_number += 1  # increase run number and try again
+                    continue
+                else:
+                    raise IOError("Filename %s already exists." % filename)
+            else:
+                self.run_filename = os.path.join(self.working_dir, filename)
+                break
+
+        # set up logger
+        self.fh = logging.FileHandler(self.run_filename + '.log')
         self.fh.setLevel(logging.DEBUG)
         self.logger = logging.getLogger()
         self.logger.addHandler(self.fh)
@@ -251,7 +269,7 @@ class m26():
 
         self.logger.removeHandler(self.fh)
 
-        logging.info('Data Output Filename: %s', self.output_filename + '.h5')
+        logging.info('Data Output Filename: %s', self.run_filename + '.h5')
 
     @contextmanager
     def readout(self):
@@ -315,9 +333,9 @@ class m26():
                 self.raw_data_file = None
 
     def open_file(self):
-        self.raw_data_file = open_raw_data_file(filename=self.output_filename,
+        self.raw_data_file = open_raw_data_file(filename=self.run_filename,
                                                 mode='w',
-                                                title=self.run_name,
+                                                title=os.path.basename(self.run_filename),
                                                 socket_address=self.send_data)
         if self.raw_data_file.socket:
             # send reset to indicate a new scan for the online monitor
@@ -362,9 +380,10 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description='Pymosa %s\nExample: python m26.py --no-m26-jtag-configuration --filename <output filename>' % pymosa_version, formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('-f', '--filename', type=str, metavar='<output filename>', action='store', help='filename of the telescope data file')
+    parser.add_argument('-r', '--run_number', type=int, metavar='<run number>', action='store', help='base run number (will be automatically increased)')
     parser.add_argument('--scan_timeout', type=int, metavar='<scan timeout>', action='store', help="scan timeout in seconds, default: 0 (disabled)")
     parser.add_argument('--max_triggers', type=int, metavar='<number of triggers>', action='store', help="maximum number of triggers, default: 0 (disabled)")
-    parser.add_argument('--no-m26-jtag-configuration', dest='no_m26_jtag_configuration', action='store_true', help='disable Mimosa26 configuration via JTAG.')
+    parser.add_argument('--no_m26_jtag_configuration', dest='no_m26_jtag_configuration', action='store_true', help='disable Mimosa26 configuration via JTAG.')
     parser.set_defaults(no_m26_jtag_configuration=False)
     args = parser.parse_args()
 
@@ -374,6 +393,8 @@ if __name__ == '__main__':
     print args
     if args.filename is not None:
         config["filename"] = args.filename
+    if args.run_number is not None:
+        config["run_number"] = args.run_number
     if args.scan_timeout is not None:
         config["scan_timeout"] = args.scan_timeout
     if args.max_triggers is not None:
