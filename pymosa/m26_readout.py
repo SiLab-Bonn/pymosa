@@ -352,6 +352,7 @@ class M26Readout(object):
         '''
         logging.debug('Starting writer thread with index %d', index)
         self._data_conditions[index].acquire()
+        time_last_data_all = time()
         time_last_data = {}
         time_write = time()
         converted_data_tuple_list = [None] * len(self.filter_func)
@@ -361,6 +362,8 @@ class M26Readout(object):
                     for m26_id, time_last_data_m26 in time_last_data.iteritems():
                         if time_last_data_m26 + no_data_timeout < time():
                             raise NoDataTimeout('Received no data for %0.1f second(s) for Mimosa26 plane with ID %d' % (no_data_timeout, m26_id))
+                    if time_last_data_all + no_data_timeout < time():
+                        raise NoDataTimeout('Received no data for %0.1f second(s) for Mimosa26 plane' % no_data_timeout)
                 converted_data_tuple = self._data_deque[index].popleft()
             except NoDataTimeout:
                 no_data_timeout = None  # raise exception only once
@@ -384,6 +387,8 @@ class M26Readout(object):
                         m26_ids = convert_data_array(array=converted_data_tuple[0], filter_func=is_m26_word, converter_func=get_m26_ids)
                         for m26_id in m26_ids:
                             time_last_data[m26_id] = curr_time
+                        if len(time_last_data) == len(self.enabled_m26_channels):
+                            time_last_data_all = time()
                     if converted_data_tuple_list[index]:
                         converted_data_tuple_list[index].append(converted_data_tuple)
                     else:
