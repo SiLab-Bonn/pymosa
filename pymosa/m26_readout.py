@@ -174,7 +174,7 @@ class M26Readout(object):
                 self.readout_threads.append(readout_thread)
                 self.worker_threads.append(worker_thread)
             for index, _ in enumerate(self.filter_func):
-                writer_thread = Thread(target=self.writer, name='WriterThread %d' % index, kwargs={'index': index})
+                writer_thread = Thread(target=self.writer, name='WriterThread %d' % index, kwargs={'index': index, 'no_data_timeout': no_data_timeout})
                 writer_thread.daemon = True
                 self.writer_threads.append(writer_thread)
             for writer_thread in self.writer_threads:
@@ -269,13 +269,13 @@ class M26Readout(object):
         Readout thread, which uses read_raw_data_from_fifo() and appends data to self._fifo_data_deque (collection.deque).
         '''
         logging.info('Starting readout thread for %s', fifo)
-        time_stop_read = get_float_time()
+        time_last_data = time()
         time_wait = 0.0
         empty_reads = 0
         while not self.force_stop[fifo].wait(time_wait if time_wait >= 0.0 else 0.0):
             time_read = time()
             try:
-                if no_data_timeout and time_stop_read + no_data_timeout < get_float_time():
+                if no_data_timeout and time_last_data + no_data_timeout < get_float_time():
                     raise NoDataTimeout('Received no data for %0.1f second(s) from %s' % (no_data_timeout, fifo))
                 raw_data = self.read_raw_data_from_fifo(fifo)
             except NoDataTimeout:
@@ -294,6 +294,7 @@ class M26Readout(object):
             else:
                 n_data_words = raw_data.shape[0]
                 if n_data_words > 0:
+                    time_last_data = time()
                     empty_reads = 0
                     time_start_read, time_stop_read = self.update_timestamp(fifo)
                     status = 0
@@ -328,34 +329,45 @@ class M26Readout(object):
                 if data_tuple is None:  # if None then exit
                     break
                 else:
-                    for i, (filter_func, converter_func, fifo_select) in enumerate(izip(self.filter_func, self.converter_func, self.fifo_select)):
+                    for index, (filter_func, converter_func, fifo_select) in enumerate(izip(self.filter_func, self.converter_func, self.fifo_select)):
                         if fifo_select is None or fifo_select == fifo:
                             # filter and do the conversion
                             converted_data_tuple = convert_data_iterable((data_tuple,), filter_func=filter_func, converter_func=converter_func)[0]
                             n_data_words = converted_data_tuple[0].shape[0]
                             with self.data_words_per_second_lock:
-                                self._words_per_read[i].append((n_data_words, converted_data_tuple[1], converted_data_tuple[2]))
-                            self._data_deque[i].append(converted_data_tuple)
-                            with self._data_conditions[i]:
-                                self._data_conditions[i].notify_all()
-        for i, fifo_select in enumerate(self.fifo_select):
+                                self._words_per_read[index].append((n_data_words, converted_data_tuple[1], converted_data_tuple[2]))
+                            self._data_deque[index].append(converted_data_tuple)
+                            with self._data_conditions[index]:
+                                self._data_conditions[index].notify_all()
+        for index, fifo_select in enumerate(self.fifo_select):
             if fifo_select is None or fifo_select == fifo:
-                self._data_deque[i].append(None)
-                with self._data_conditions[i]:
-                    self._data_conditions[i].notify_all()
+                self._data_deque[index].append(None)
+                with self._data_conditions[index]:
+                    self._data_conditions[index].notify_all()
         self._fifo_conditions[fifo].release()
         logging.debug('Stopping worker thread for %s', fifo)
 
-    def writer(self, index):
+    def writer(self, index, no_data_timeout=None):
         '''Writer thread continuously calling callback function for writing data when data becomes available.
         '''
         logging.debug('Starting writer thread with index %d', index)
         self._data_conditions[index].acquire()
+        time_last_data = {}
         time_write = time()
         converted_data_tuple_list = [None] * len(self.filter_func)
         while True:
             try:
+                if no_data_timeout:
+                    for m26_id, time_last_data_m26 in time_last_data.iteritems():
+                        if time_last_data_m26 + no_data_timeout < time():
+                            raise NoDataTimeout('Received no data for %0.1f second(s) for Mimosa26 plane with ID %d' % (no_data_timeout, m26_id))
                 converted_data_tuple = self._data_deque[index].popleft()
+            except NoDataTimeout:
+                no_data_timeout = None  # raise exception only once
+                if self.errback:
+                    self.errback(sys.exc_info())
+                else:
+                    raise
             except IndexError:
                 self._data_conditions[index].wait(self.readout_interval)  # sleep a little bit, reducing CPU usage
             else:
@@ -367,6 +379,11 @@ class M26Readout(object):
                             self.errback(sys.exc_info())
                     break
                 else:
+                    if no_data_timeout:
+                        curr_time = time()
+                        m26_ids = convert_data_array(array=converted_data_tuple[0], filter_func=is_m26_word, converter_func=get_m26_ids)
+                        for m26_id in m26_ids:
+                            time_last_data[m26_id] = curr_time
                     if converted_data_tuple_list[index]:
                         converted_data_tuple_list[index].append(converted_data_tuple)
                     else:
@@ -554,3 +571,24 @@ def convert_data_array(array, filter_func=None, converter_func=None):  # TODO: a
     if converter_func:
         array = converter_func(array)
     return array
+
+
+def is_m26_word(value):
+    ''' Check for Mimosa26 data words.
+    '''
+    return np.equal(np.bitwise_and(value, 0x80000000), 0)  # no trigger word
+
+
+def get_m26_ids(array):
+    ''' Check for and return different Mimosa26 identifiers.
+
+    Parameters
+    ----------
+    array : numpy.array
+        Raw data array.
+
+    Returns
+    -------
+    Mimosa26 identifiers in data stream.
+    '''
+    return np.unique(np.right_shift(np.bitwise_and(array, 0x00F00000), 20))
