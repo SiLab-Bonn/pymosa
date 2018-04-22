@@ -387,7 +387,7 @@ if __name__ == '__main__':
     parser.add_argument('-r', '--run_number', type=int, metavar='<run number>', action='store', help='base run number (will be automatically increased)')
     parser.add_argument('--scan_timeout', type=int, metavar='<scan timeout>', action='store', help="scan timeout in seconds, default: 0 (disabled)")
     parser.add_argument('--max_triggers', type=int, metavar='<number of triggers>', action='store', help="maximum number of triggers, default: 0 (disabled)")
-    parser.add_argument('--no_m26_jtag_configuration', dest='no_m26_jtag_configuration', action='store_true', help='disable Mimosa26 configuration via JTAG.')
+    parser.add_argument('--no_m26_jtag_configuration', dest='no_m26_jtag_configuration', action='store_true', help='disable Mimosa26 configuration via JTAG')
     parser.set_defaults(no_m26_jtag_configuration=False)
     args = parser.parse_args()
 
