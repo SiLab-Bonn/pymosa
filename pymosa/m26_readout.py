@@ -578,10 +578,16 @@ def convert_data_array(array, filter_func=None, converter_func=None):  # TODO: a
     return array
 
 
+def is_trigger_word(value):
+    return np.equal(np.bitwise_and(value, 0x80000000), 0x80000000)
+
+
 def is_m26_word(value):
     ''' Check for Mimosa26 data words.
+
+    Note: the Mimosa26 header is set in the firmware.
     '''
-    return np.equal(np.bitwise_and(value, 0x80000000), 0)  # no trigger word
+    return np.equal(np.bitwise_and(value, 0xFF000000), 0x20000000)  # header: 0x20
 
 
 def get_m26_ids(array):
