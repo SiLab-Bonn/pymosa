@@ -63,7 +63,7 @@ class m26():
         self.working_dir = self.telescope_conf.get("output_folder", None)
         if not self.working_dir:
             self.working_dir = os.path.join(os.getcwd(), "telescope_data")
-        self.working_dir = os.path.normpath(self.working_dir.replace('\\', '/')) 
+        self.working_dir = os.path.normpath(self.working_dir.replace('\\', '/'))
         self.output_filename = self.telescope_conf.get('filename', None)  # default None: filename is generated
         if self.output_filename:
             self.output_filename = os.path.basename(self.output_filename)
