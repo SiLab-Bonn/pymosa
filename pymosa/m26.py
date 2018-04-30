@@ -24,8 +24,6 @@ from m26_readout import M26Readout
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-REQUIRED_FW_VERSION = 5  # required version for mmc3_m26_eth.v
-
 
 class m26():
     ''' Mimosa26 telescope readout with MMC3 hardware.
@@ -51,10 +49,8 @@ class m26():
         # check firmware version
         fw_version = self.dut['ETH'].read(0x0000, 1)[0]
         logging.info("MMC3 firmware version: %s" % (fw_version))
-        if fw_version != REQUIRED_FW_VERSION:
-            raise Exception("MMC3 firmware version does not satisfy version requirements (read: %s, require: %s)" % (fw_version, REQUIRED_FW_VERSION))
-        if int(self.dut.version) != REQUIRED_FW_VERSION:
-            raise Exception("MMC3 firmware version does not match DUT configuration file (read: %s, require: %s)" % (int(self.dut.version), REQUIRED_FW_VERSION))
+        if int(self.dut.version) != fw_version:
+            raise Exception("MMC3 firmware version does not match DUT configuration file (read: %s, require: %s)" % (fw_version, int(self.dut.version)))
 
         # default configuration
         # use self.telescope_conf to store conf dict to telescope data file
