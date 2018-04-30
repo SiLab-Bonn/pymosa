@@ -60,7 +60,7 @@ def open_raw_data_file(filename, mode="w", title="", scan_parameters=None, socke
 # from pyBAR
 class M26RawDataFile(object):
 
-    max_table_size = 2**31 - 1000000  # pytables bug not allowing more than 2^31 entries in a table, since the read function uses xrange which behaves differently on 32/64bit platforms, fixed in pytables 3.2.0 release
+    max_table_size = 2**63 - 1000000  # limit file size, just in case
 
     '''Raw data file object. Saving data queue to HDF5 file.
     '''
