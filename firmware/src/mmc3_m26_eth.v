@@ -48,7 +48,7 @@ module mmc3_m26_eth(
 // ***********************************************************
 // *** change version number in case of functional changes ***
 // ***********************************************************
-localparam VERSION = 8'd4;
+localparam VERSION = 8'd5;
 
 wire RST;
 wire CLK125PLLTX, CLK125PLLTX90;
@@ -204,6 +204,7 @@ wire [7:0] RBCP_WD, RBCP_RD;
 wire [31:0] RBCP_ADDR;
 wire TCP_RX_WR;
 wire [7:0] TCP_RX_DATA;
+wire [15:0] TCP_RX_WC;
 wire RBCP_ACK;
 wire SiTCP_RST;
 
@@ -260,7 +261,7 @@ WRAP_SiTCP_GMII_XC7K_32K sitcp(
     .TCP_CLOSE_REQ(TCP_CLOSE_REQ)        ,    // out    : Connection close request
     .TCP_CLOSE_ACK(TCP_CLOSE_REQ)        ,    // in    : Acknowledge for closing
     // FIFO I/F
-    .TCP_RX_WC(1'b1)            ,    // in    : Rx FIFO write count[15:0] (Unused bits should be set 1)
+    .TCP_RX_WC(TCP_RX_WC)            ,    // in    : Rx FIFO write count[15:0] (Unused bits should be set 1)
     .TCP_RX_WR(TCP_RX_WR)            ,    // out    : Write enable
     .TCP_RX_DATA(TCP_RX_DATA)            ,    // out    : Write data[7:0]
     .TCP_TX_FULL(TCP_TX_FULL)            ,    // out    : Almost full flag
@@ -281,11 +282,16 @@ WRAP_SiTCP_GMII_XC7K_32K sitcp(
 wire BUS_WR, BUS_RD, BUS_RST;
 wire [31:0] BUS_ADD;
 wire [7:0] BUS_DATA;
+wire INVALID;
 assign BUS_RST = SiTCP_RST;
 
-rbcp_to_bus irbcp_to_bus(
+tcp_to_bus itcp_to_bus(
     .BUS_RST(BUS_RST),
     .BUS_CLK(BUS_CLK),
+
+    .TCP_RX_WC(TCP_RX_WC),
+    .TCP_RX_WR(TCP_RX_WR),
+    .TCP_RX_DATA(TCP_RX_DATA),
 
     .RBCP_ACT(RBCP_ACT),
     .RBCP_ADDR(RBCP_ADDR),
@@ -298,7 +304,9 @@ rbcp_to_bus irbcp_to_bus(
     .BUS_WR(BUS_WR),
     .BUS_RD(BUS_RD),
     .BUS_ADD(BUS_ADD),
-    .BUS_DATA(BUS_DATA)
+    .BUS_DATA(BUS_DATA),
+
+    .INVALID(INVALID)
 );
 
 // -------  MODULE ADREESSES  ------- //
@@ -334,7 +342,7 @@ always @ (posedge BUS_CLK)
     else
         DATA_READ <= 0;
 
-assign BUS_DATA[7:0] = DATA_READ ? BUS_DATA_OUT : 8'hzz;
+assign BUS_DATA = DATA_READ ? BUS_DATA_OUT : 8'bz;
 
 
 // -------  USER MODULES  ------- //
@@ -342,7 +350,8 @@ assign BUS_DATA[7:0] = DATA_READ ? BUS_DATA_OUT : 8'hzz;
 wire M26_TCK, M26_TMS, M26_TDI, M26_TDO, M26_TMS_INV, M26_TDI_INV, M26_TDO_INV;
 wire M26_RESETB;
 wire M26_CLK_START, M26_CLK_SPEAK, M26_CLK_RESET, M26_CLK_CLK;
-wire [3:0] GPIO_JTAG_NC;
+wire [2:0] GPIO_JTAG_NC;
+wire [3:0] GPIO_NC;
 OBUFDS #(
   .IOSTANDARD("LVDS_25"),
   .SLEW("SLOW")
@@ -427,7 +436,7 @@ gpio #(
     .BUS_DATA(BUS_DATA),
     .BUS_RD(BUS_RD),
     .BUS_WR(BUS_WR),
-    .IO({LED[5:3], M26_TDO, M26_TDI_INV, M26_TMS_INV, M26_TCK, M26_RESETB})
+    .IO({GPIO_JTAG_NC, M26_TDO, M26_TDI_INV, M26_TMS_INV, M26_TCK, M26_RESETB})
 );
 
 
@@ -445,7 +454,7 @@ gpio #(
     .BUS_DATA(BUS_DATA),
     .BUS_RD(BUS_RD),
     .BUS_WR(BUS_WR),
-    .IO({GPIO_JTAG_NC, M26_CLK_SPEAK, M26_CLK_RESET, M26_CLK_START, M26_CLK_CLK})
+    .IO({GPIO_NC, M26_CLK_SPEAK, M26_CLK_RESET, M26_CLK_START, M26_CLK_CLK})
 );
 
 wire TRIGGER_ENABLE; // from CMD FSM
@@ -685,10 +694,11 @@ clock_divider #(
     .CLOCK(CLK_1HZ)
 );
 
-assign LED[7:6] = 2'hf;
+assign LED[7:4] = 4'b1111;
 assign LED[0] = CLK_1HZ;
-assign LED[1] = FIFO_FULL;
-assign LED[2] = |LOST_ERROR;
+assign LED[1] = ~FIFO_FULL;
+assign LED[2] = ~|LOST_ERROR;
+assign LED[3] = ~INVALID;
 
 assign PMOD[7:0] = 8'b0;
 
