@@ -218,7 +218,7 @@ WRAP_SiTCP_GMII_XC7K_32K sitcp(
     .RST(RST)                    ,    // in    : System reset
     // Configuration parameters
     .FORCE_DEFAULTn(1'b0)        ,    // in    : Load default parameters
-    .EXT_IP_ADDR(32'hc0a80a10)            ,    // in    : IP address[31:0] //192.168.10.16
+    .EXT_IP_ADDR(32'hc0a80110)            ,    // in    : IP address[31:0] //192.168.1.16
     .EXT_TCP_PORT(16'd24)        ,    // in    : TCP port #[15:0]
     .EXT_RBCP_PORT(16'd4660)        ,    // in    : RBCP port #[15:0]
     .PHY_ADDR(5'd3)            ,    // in    : PHY-device MIF address[4:0]
