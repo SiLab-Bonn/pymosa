@@ -135,14 +135,14 @@ set_property PACKAGE_PIN D11 [get_ports {M26_MKD_N[4]}]
 set_property PACKAGE_PIN D14 [get_ports {M26_DATA1_P[4]}]
 set_property PACKAGE_PIN D13 [get_ports {M26_DATA1_N[4]}]
 
-set_property PACKAGE_PIN E12 [get_ports {M26_CLK_N[5]}]
 set_property PACKAGE_PIN E13 [get_ports {M26_CLK_P[5]}]
+set_property PACKAGE_PIN E12 [get_ports {M26_CLK_N[5]}]
 set_property PACKAGE_PIN B14 [get_ports {M26_DATA0_P[5]}]
 set_property PACKAGE_PIN A14 [get_ports {M26_DATA0_N[5]}]
-set_property PACKAGE_PIN A10 [get_ports {M26_MKD_N[5]}]
 set_property PACKAGE_PIN B10 [get_ports {M26_MKD_P[5]}]
-set_property PACKAGE_PIN B16 [get_ports {M26_DATA1_N[5]}]
+set_property PACKAGE_PIN A10 [get_ports {M26_MKD_N[5]}]
 set_property PACKAGE_PIN C16 [get_ports {M26_DATA1_P[5]}]
+set_property PACKAGE_PIN B16 [get_ports {M26_DATA1_N[5]}]
 
 set_property IOSTANDARD LVDS_25 [get_ports M26_*]
 
@@ -173,17 +173,17 @@ set_false_path -from [get_clocks BUS_CLK_PLL] -to [get_clocks m26_clk4]
 set_false_path -from [get_clocks BUS_CLK_PLL] -to [get_clocks m26_clk5]
 
 ## Port 7
-set_property PACKAGE_PIN A19 [get_ports M26_TCK_N]
-set_property PACKAGE_PIN A18 [get_ports M26_TCK_P]
 set_property IOSTANDARD LVDS_25 [get_ports M26_TCK*]
+set_property PACKAGE_PIN A18 [get_ports M26_TCK_P]
+set_property PACKAGE_PIN A19 [get_ports M26_TCK_N]
 
+set_property IOSTANDARD LVDS_25 [get_ports M26_TMS*]
 set_property PACKAGE_PIN F17 [get_ports M26_TMS_P]
 set_property PACKAGE_PIN E17 [get_ports M26_TMS_N]
-set_property IOSTANDARD LVDS_25 [get_ports M26_TMS*]
 
-set_property PACKAGE_PIN E16 [get_ports M26_TDI_N]
-set_property PACKAGE_PIN E15 [get_ports M26_TDI_P]
 set_property IOSTANDARD LVDS_25 [get_ports M26_TDI*]
+set_property PACKAGE_PIN E15 [get_ports M26_TDI_P]
+set_property PACKAGE_PIN E16 [get_ports M26_TDI_N]
 
 set_property PACKAGE_PIN G15 [get_ports M26_TDO_P]
 set_property PACKAGE_PIN F15 [get_ports M26_TDO_N]
@@ -214,7 +214,7 @@ set_property IOSTANDARD LVCMOS25 [get_ports LEMO_RX*]
 #set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets n_0_m26_gen[5].IBUFDS_inst_M26_CLK]
 
 set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets M26_CLK_0]
-set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets M26_CLK_1]
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets M26_CLK_1_BUFG]
 set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets M26_CLK_2]
 set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets M26_CLK_3]
 set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets M26_CLK_4]
@@ -259,3 +259,6 @@ set_property DRIVE 16 [get_ports {PMOD[0]}]
 
 
 set_property PACKAGE_PIN H12 [get_ports M26_CLK_START_P]
+
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets M26_CLK_1]
+set_property BITSTREAM.CONFIG.SPI_BUSWIDTH 4 [current_design]
