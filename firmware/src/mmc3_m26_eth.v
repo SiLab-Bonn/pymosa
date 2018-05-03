@@ -516,7 +516,7 @@ always@(posedge BUS_CLK)
     timestamp_gray <=  (TIMESTAMP>>1) ^ TIMESTAMP;
 
 wire [5:0] M26_CLK;
-wire [5:0] M26_CLK_BUFG;
+//wire [5:0] M26_CLK_BUFG;
 wire [5:0] M26_MKD;
 wire [5:0] M26_DATA0;
 wire [5:0] M26_DATA0_RX;
@@ -575,7 +575,7 @@ generate
             .IB(M26_DATA1_N[ch])
         );
 
-        BUFG BUFG_inst_M26_CLK(.O(M26_CLK_BUFG[ch]), .I(M26_CLK[ch]));
+        //BUFG BUFG_inst_M26_CLK(.O(M26_CLK_BUFG[ch]), .I(M26_CLK[ch]));
 
         assign M26_CLK_INV[ch] = ~M26_CLK[ch];
 
@@ -601,7 +601,7 @@ generate
             .HEADER(8'h20),
             .IDENTYFIER(ch+1)
         ) i_m26_rx (
-            .CLK_RX(M26_CLK_BUFG[ch]),
+            .CLK_RX(M26_CLK[ch]),
             .MKD_RX(M26_MKD[ch]),
             .DATA_RX({M26_DATA1[ch], M26_DATA0[ch]}),
 
