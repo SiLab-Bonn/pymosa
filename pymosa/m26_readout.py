@@ -361,9 +361,9 @@ class M26Readout(object):
                 if no_data_timeout:
                     for m26_id, time_last_data_m26 in time_last_data.iteritems():
                         if time_last_data_m26 + no_data_timeout < time():
-                            raise NoDataTimeout('Received no data for %0.1f second(s) for Mimosa26 plane with ID %d' % (no_data_timeout, m26_id))
+                            raise NoDataTimeout('Received no data for %0.1f second(s) from Mimosa26 plane with ID %d' % (no_data_timeout, m26_id))
                     if time_last_data_all + no_data_timeout < time():
-                        raise NoDataTimeout('Received no data for %0.1f second(s) for Mimosa26 plane' % no_data_timeout)
+                        raise NoDataTimeout('Received no data for %0.1f second(s) from %d Mimosa26 plane(s)' % (no_data_timeout, len(self.enabled_m26_channels) - len(time_last_data)))
                 converted_data_tuple = self._data_deque[index].popleft()
             except NoDataTimeout:
                 no_data_timeout = None  # raise exception only once
