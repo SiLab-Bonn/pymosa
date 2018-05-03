@@ -11,7 +11,7 @@ max_triggers : 0  # Maximum number of triggers; if 0, there is no limit on the n
 #filename: run_1  # Filename of the telescope data file
 
 # *** trigger configuration ***
-TLU:
+TLU :
     TRIGGER_MODE                         : 3  # Selecting trigger mode: Use trigger inputs/trigger select (0), TLU no handshake (1), TLU simple handshake (2), TLU data handshake (3)
     TRIGGER_LOW_TIMEOUT                  : 0  # Maximum wait cycles for TLU trigger to become low
     TRIGGER_SELECT                       : 0  # Selecting trigger input
@@ -23,3 +23,29 @@ TLU:
     TRIGGER_DATA_DELAY                   : 8  # Depends on the cable length and should be adjusted (run scan/tune_tlu.py in pyBAR repository)
     TRIGGER_THRESHOLD                    : 0  # Trigger minimum length; if 0, the threshold is disabled
 
+# *** Mimosa26 receiver configuration ***
+M26_RX1 :
+    EN : 0  # will be enabled automatically
+    TIMESTAMP_HEADER : 1  # enable for assigning hits to a particular frame
+M26_RX2 :
+    EN : 0
+    TIMESTAMP_HEADER : 1
+M26_RX3 :
+    EN : 0
+    TIMESTAMP_HEADER : 1
+M26_RX4 :
+    EN : 0
+    TIMESTAMP_HEADER : 1
+M26_RX5 :
+    EN : 0
+    TIMESTAMP_HEADER : 1
+M26_RX6 :
+    EN : 0
+    TIMESTAMP_HEADER : 1
+
+# *** Mimosa26 JTAG configuration ***
+GPIO_JTAG :
+    OUTPUT :
+    - 1
+    OUTPUT_EN :
+    - 0
