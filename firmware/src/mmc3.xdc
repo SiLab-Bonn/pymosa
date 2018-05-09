@@ -262,3 +262,6 @@ create_generated_clock -name rgmii_txc -source [get_pins rgmii/ODDR_inst/C] -div
 set_clock_groups -asynchronous -group [get_clocks rgmii_rxc] -group [get_clocks CLK125PLLTX]
 set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
 set_property BITSTREAM.CONFIG.CONFIGRATE 33 [current_design]
+
+set_property CONFIG_VOLTAGE 3.3 [current_design]
+set_property CFGBVS VCCO [current_design]
