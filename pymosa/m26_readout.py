@@ -479,7 +479,7 @@ class M26Readout(object):
             self.dut[m26_rx_name].RESET
 
     def reset_fifo(self, fifos):
-        if not isinstance(fifos, Iterable):
+        if isinstance(fifos, basestring):
             fifos = [fifos]
         for fifo in fifos:
             fifo_size = self.dut[fifo]['FIFO_SIZE']
