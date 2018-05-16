@@ -52,9 +52,9 @@ class M26Readout(object):
         self.converter_func = [None]
         self.fifo_select = [None]
         self.enabled_m26_channels = None
-        self.readout_interval = 0.05
-        self.write_interval = 1.0
-        self.watchdog_interval = 1.0
+        self.readout_interval = 0.05  # in seconds
+        self.write_interval = 1.0  # in seconds
+        self.watchdog_interval = 1.0  # in seconds
         self._moving_average_time_period = 10.0  # in seconds
         self._n_empty_reads = 3  # number of empty reads before stopping FIFO readout
         self._fifo_data_deque = None
