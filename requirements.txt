@@ -1,5 +1,5 @@
 # Core functionality
-basil_daq>=2.4.10 # readout framework pymosa is built on
+basil_daq>=2.4.12
 bitarray>=0.8.1
 numpy
 tables

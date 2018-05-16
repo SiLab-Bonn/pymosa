@@ -33,9 +33,9 @@ conda install bitarray numpy pytables pyyaml
 pip install progressbar-latest
 ```
 
-Install [Basil](https://github.com/SiLab-Bonn/basil) (>=2.4.10,<3.0.0):
+Install [Basil](https://github.com/SiLab-Bonn/basil) (>=2.4.12,<3.0.0):
 ```bash
-pip install 'basil_daq>=2.4.10,<3.0.0'
+pip install 'basil_daq>=2.4.12,<3.0.0'
 ```
 
 Finally, install pymosa via:
