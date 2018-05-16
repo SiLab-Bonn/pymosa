@@ -26,7 +26,6 @@ setup(
     packages=find_packages(),
     setup_requires=['setuptools'],
     include_package_data=True,  # accept all data files and directories matched by MANIFEST.in or found in source control
-    package_data={'pymosa': ['*.yaml']},
     keywords=['silicon', 'detector', 'telescope', 'Mimosa26', 'EUDET'],
     platforms='any'
 )
