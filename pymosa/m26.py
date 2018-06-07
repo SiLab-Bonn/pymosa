@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-class m26():
+class m26(object):
     ''' Mimosa26 telescope readout with MMC3 hardware.
 
     Note:
