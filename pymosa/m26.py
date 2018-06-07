@@ -225,6 +225,9 @@ class m26(object):
 
         logging.info('Total amount of triggers collected: %d', self.dut['TLU']['TRIGGER_COUNTER'])
 
+    def analyze(self):
+        pass
+
     def start(self):
         '''Start Mimosa26 telescope scan.
         '''
@@ -265,6 +268,7 @@ class m26(object):
         self.logger.removeHandler(self.fh)
 
         logging.info('Data Output Filename: %s', self.run_filename + '.h5')
+        self.analyze()
 
     @contextmanager
     def readout(self):
