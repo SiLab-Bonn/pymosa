@@ -20,7 +20,7 @@ TLU :
     TRIGGER_HANDSHAKE_ACCEPT_WAIT_CYCLES : 3  # TLU trigger minimum length in TLU clock cycles
     DATA_FORMAT                          : 2  # Select trigger data format: only trigger number (0), only time stamp (1), combined, 15bit time stamp + 16bit trigger number (2)
     EN_TLU_VETO                          : 0  # Assert TLU veto when external veto is high
-    TRIGGER_DATA_DELAY                   : 8  # Depends on the cable length and should be adjusted (run scan/tune_tlu.py in pyBAR repository)
+    TRIGGER_DATA_DELAY                   : 8  # Depends on the cable length and should be adjusted (run tune_tlu.py script)
     TRIGGER_THRESHOLD                    : 0  # Trigger minimum length; if 0, the threshold is disabled
 
 # *** Mimosa26 receiver configuration ***

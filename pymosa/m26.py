@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-class m26():
+class m26(object):
     ''' Mimosa26 telescope readout with MMC3 hardware.
 
     Note:
@@ -225,6 +225,9 @@ class m26():
 
         logging.info('Total amount of triggers collected: %d', self.dut['TLU']['TRIGGER_COUNTER'])
 
+    def analyze(self):
+        pass
+
     def start(self):
         '''Start Mimosa26 telescope scan.
         '''
@@ -265,11 +268,12 @@ class m26():
         self.logger.removeHandler(self.fh)
 
         logging.info('Data Output Filename: %s', self.run_filename + '.h5')
+        self.analyze()
 
     @contextmanager
-    def readout(self):
+    def readout(self, *args, **kwargs):
         try:
-            self.start_readout()
+            self.start_readout(*args, **kwargs)
             yield
         finally:
             try:
@@ -279,9 +283,10 @@ class m26():
                 if self.m26_readout.is_running:
                     self.m26_readout.stop(timeout=0.0)
 
-    def start_readout(self):
+    def start_readout(self, *args, **kwargs):
         '''Start readout of Mimosa26 sensors.
         '''
+        enabled_m26_channels = kwargs.get('enabled_m26_channels', None)  # None will enable all existing Mimosa26 channels
         self.m26_readout.start(
             fifos="SITCP_FIFO",
             callback=self.handle_data,
@@ -289,7 +294,7 @@ class m26():
             reset_rx=True,
             reset_fifo=True,
             no_data_timeout=self.no_data_timeout,
-            enabled_m26_channels=[rx.name for rx in self.dut.get_modules('m26_rx')])
+            enabled_m26_channels=enabled_m26_channels)
 
         self.dut['TLU']['MAX_TRIGGERS'] = self.max_triggers
         self.dut['TLU']['TRIGGER_ENABLE'] = True
@@ -345,10 +350,10 @@ class m26():
     def handle_data(self, data, new_file=False, flush=True):
         '''Handling of raw data and meta data during readout.
         '''
-        for i, data_tuple in enumerate(data):
+        for data_tuple in data:
             if data_tuple is None:
                 continue
-            self.raw_data_file.append(data_iterable=data_tuple, new_file=new_file, flush=True)
+            self.raw_data_file.append(data_iterable=data_tuple, new_file=new_file, flush=flush)
 
     def handle_err(self, exc):
         '''Handling of error messages during readout.
