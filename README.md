@@ -50,3 +50,8 @@ Run telescope readout via:
 ```bash
 pymosa
 ```
+
+Get help with:
+```bash
+pymosa --help
+```
