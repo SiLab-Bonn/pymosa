@@ -48,5 +48,5 @@ Before running telescope readout setup run and trigger configuration in configur
 
 Run telescope readout via:
 ```bash
-python m26.py
+pymosa
 ```
