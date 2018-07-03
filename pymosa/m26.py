@@ -94,7 +94,7 @@ class m26(object):
         logger.info('Loading M26 configuration file %s', m26_configuration_file)
 
         def write_jtag(irs, IR):
-            for i, ir in enumerate(irs):
+            for ir in irs:
                 logger.info('Programming M26 JTAG configuration reg %s', ir)
                 logger.debug(self.dut[ir][:])
                 self.dut['JTAG'].scan_ir([BitLogic(IR[ir])] * 6)
@@ -103,7 +103,7 @@ class m26(object):
         def check_jtag(irs, IR):
             # read first registers
             ret = {}
-            for i, ir in enumerate(irs):
+            for ir in irs:
                 logger.info('Reading M26 JTAG configuration reg %s', ir)
                 self.dut['JTAG'].scan_ir([BitLogic(IR[ir])] * 6)
                 ret[ir] = self.dut['JTAG'].scan_dr([self.dut[ir][:]])[0]
@@ -371,8 +371,10 @@ class m26(object):
         self.stop_scan = True
 
 
-if __name__ == '__main__':
+def main():
+    ''' Main entry point to start a scan '''
     try:
+        import pymosa
         from pymosa import __version__ as pymosa_version
     except ImportError:
         try:
@@ -392,10 +394,12 @@ if __name__ == '__main__':
     parser.set_defaults(no_m26_jtag_configuration=False)
     args = parser.parse_args()
 
-    with open('./m26_configuration.yaml', 'r') as f:
+    # Open Mimosa26 std. configuration
+    pymosa_path = os.path.dirname(pymosa.__file__)
+    with open(os.path.join(pymosa_path, 'm26_configuration.yaml'), 'r') as f:
         config = yaml.load(f)
 
-    print args
+    # Set config from arguments
     if args.filename is not None:
         config["filename"] = args.filename
     if args.run_number is not None:
@@ -413,3 +417,7 @@ if __name__ == '__main__':
     telescope.init(init_conf=config)
     # Start telescope readout
     telescope.start()
+
+
+if __name__ == '__main__':
+    main()

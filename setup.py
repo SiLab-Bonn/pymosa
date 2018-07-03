@@ -27,5 +27,10 @@ setup(
     setup_requires=['setuptools'],
     include_package_data=True,  # accept all data files and directories matched by MANIFEST.in or found in source control
     keywords=['silicon', 'detector', 'telescope', 'Mimosa26', 'EUDET'],
-    platforms='any'
+    platforms='any',
+    entry_points={
+        'console_scripts': [
+            'pymosa = pymosa.m26:main'
+        ]
+    },
 )
