@@ -30,7 +30,8 @@ setup(
     platforms='any',
     entry_points={
         'console_scripts': [
-            'pymosa = pymosa.m26:main'
+            'pymosa = pymosa.m26:main',
+            'pymosa_eudaq = pymosa.eudaq:main'
         ]
     },
 )
