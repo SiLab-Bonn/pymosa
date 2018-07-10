@@ -117,8 +117,7 @@ class m26(object):
                 elif k == "BSR_ALL":
                     pass  # TODO mask clock bits and check others
                 elif self.dut[k][:] != v:
-                    logger.error(
-                        "JTAG data does not match %s get=%s set=%s" % (k, v, self.dut[k][:]))
+                    logger.error("JTAG data does not match %s get=%s set=%s" % (k, v, self.dut[k][:]))
                 else:
                     logger.info("Checking M26 JTAG %s ok" % k)
 
