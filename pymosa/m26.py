@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-class m26(object):
+class M26(object):
     ''' Mimosa26 telescope readout with MMC3 hardware.
 
     Note:
@@ -399,24 +399,24 @@ def main():
     # Open Mimosa26 std. configuration
     pymosa_path = os.path.dirname(pymosa.__file__)
     with open(os.path.join(pymosa_path, 'm26_configuration.yaml'), 'r') as f:
-        config = yaml.load(f)
+        init_conf = yaml.load(f)
 
     # Set config from arguments
     if args.filename is not None:
-        config["filename"] = args.filename
+        init_conf["filename"] = args.filename
     if args.run_number is not None:
-        config["run_number"] = args.run_number
+        init_conf["run_number"] = args.run_number
     if args.scan_timeout is not None:
-        config["scan_timeout"] = args.scan_timeout
+        init_conf["scan_timeout"] = args.scan_timeout
     if args.max_triggers is not None:
-        config["max_triggers"] = args.max_triggers
+        init_conf["max_triggers"] = args.max_triggers
     if args.no_m26_jtag_configuration:
-        config["m26_jtag_configuration"] = False
+        init_conf["m26_jtag_configuration"] = False
 
     # Create telescope object and load hardware configuration
-    telescope = m26(conf=None)  # None: use default hardware configuration
+    telescope = M26(conf=None)  # None: use default hardware configuration
     # Initialize telescope hardware and set up parameters
-    telescope.init(init_conf=config)
+    telescope.init(init_conf=init_conf)
     # Start telescope readout
     telescope.start()
     # Close the resources
