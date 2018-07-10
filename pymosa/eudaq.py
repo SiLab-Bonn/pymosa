@@ -7,6 +7,17 @@
 
 '''
     This script connects pymosa to the EUDAQ 1.x data acquisition system.
+
+    Three data taking modes are supported:
+        0: legacy mode: 2 Mimosa26 frames are readout per external trigger,
+        triggers are vetoed during readout (2 * 115 us)
+        1: speed mode: 1 Mimosa26 frame is read out per trigger,
+        triggers are vetoed during readout (1 * 115 us)
+        2: continuous mode: Mimosa26 is readout continuously,
+        data is send for each trigger, if multiple triggers exist data is
+        duplicated and send several times. No trigger veto, the readout
+        is active all the time. Asserting a unique trigger number has to
+        be done in software using time reference devices.
 '''
 
 import argparse
@@ -14,59 +25,65 @@ import logging
 import os
 import time
 import sys
-import threading
 
 import numpy as np
 import tables as tb
 from tqdm import tqdm
 import yaml
 
-from pymosa import m26
+import pymosa
+from pymosa.m26 import M26
 
 logger = logging.getLogger('EUDAQ Producer')
 
 
-class EudaqScan(m26):
+class EudaqScan(M26):
     scan_id = "eudaq_scan"
 
     last_readout_data = None
     last_trigger = 0
 
-    def set_callback(self, fun):
-        ''' Set function to be called for each raw data chunk of one trigger '''
-        self.callback = fun
+#     def __init__(self, conf=None):
+#         super(EudaqScan, self).__init__(conf)
+# 
+#     def init(self, init_conf=None, configure_m26=False):
+#         super(EudaqScan, self).init(init_conf, configure_m26)
 
-    def handle_data(self, data_tuple):
-        ''' Called on every readout (a few Hz)
-
-            Sends data per event by checking for the trigger word that comes first.
-        '''
-        super(EudaqScan, self).handle_data(data_tuple)
-        raw_data = data_tuple[0]
-
-        if np.any(self.last_readout_data):  # no last readout data for first readout
-            actual_data = np.concatenate((self.last_readout_data, raw_data))
-        else:
-            actual_data = raw_data
-
-        trg_idx = np.where(actual_data & au.TRIGGER_ID > 0)[0]
-        trigger_data = np.split(actual_data, trg_idx)
-
-        # Send data of each trigger
-        for dat in trigger_data[:-1]:
-            if np.any(dat):
-                trigger = dat[0] & au.TRG_MASK
-                if self.last_trigger > 0 and trigger != self.last_trigger + 1:
-                    logging.warning('Expected != Measured trigger number: %d != %d', self.last_trigger + 1, trigger)
-                self.last_trigger = dat[0] & au.TRG_MASK
-                self.callback(dat)
-
-        self.last_readout_data = trigger_data[-1]
-
-    def stop_readout(self, timeout=10.0):
-        super(EudaqScan, self).stop_readout(timeout)
-        # Send remaining data after stopped readout
-        self.callback(self.last_readout_data)
+#     def set_callback(self, fun):
+#         ''' Set function to be called for each raw data chunk of one trigger '''
+#         self.callback = fun
+# 
+#     def handle_data(self, data_tuple):
+#         ''' Called on every readout (a few Hz)
+# 
+#             Sends data per event by checking for the trigger word that comes first.
+#         '''
+#         super(EudaqScan, self).handle_data(data_tuple)
+#         raw_data = data_tuple[0]
+# 
+#         if np.any(self.last_readout_data):  # no last readout data for first readout
+#             actual_data = np.concatenate((self.last_readout_data, raw_data))
+#         else:
+#             actual_data = raw_data
+# 
+#         trg_idx = np.where(actual_data & au.TRIGGER_ID > 0)[0]
+#         trigger_data = np.split(actual_data, trg_idx)
+# 
+#         # Send data of each trigger
+#         for dat in trigger_data[:-1]:
+#             if np.any(dat):
+#                 trigger = dat[0] & au.TRG_MASK
+#                 if self.last_trigger > 0 and trigger != self.last_trigger + 1:
+#                     logging.warning('Expected != Measured trigger number: %d != %d', self.last_trigger + 1, trigger)
+#                 self.last_trigger = dat[0] & au.TRG_MASK
+#                 self.callback(dat)
+# 
+#         self.last_readout_data = trigger_data[-1]
+# 
+#     def stop_readout(self, timeout=10.0):
+#         super(EudaqScan, self).stop_readout(timeout)
+#         # Send remaining data after stopped readout
+#         self.callback(self.last_readout_data)
 
 
 def replay_triggered_data(data_file, real_time=True):
@@ -143,31 +160,22 @@ def main():
                         help='Raw data file to replay for testing')
     parser.add_argument('--delay', type=float,
                         help='Additional delay when replaying data in seconds')
-    parser.add_argument('-f', '--parameter_file',
-                        type=str,
-                        nargs='?',
-                        help='Path to scan parameter file. If none, the default configuration is used.',
-                        metavar='parameter_file')
     args = parser.parse_args()
 
-    if args.parameter_file:
-        parameter_file = args.parameter_file
-    else:
-        parameter_file = os.path.dirname(os.path.abspath(__file__)) + '/default_chip.yaml'
+    # Open Mimosa26 std. configuration
+    pymosa_path = os.path.dirname(pymosa.__file__)
+    with open(os.path.join(pymosa_path, 'm26_configuration.yaml'), 'r') as f:
+        init_conf = yaml.load(f)
 
-    logger.info('Using parameter file: ' + parameter_file + '\n')
-
-    with open(parameter_file, 'r') as f:
-        config = yaml.load(f)
-    config.update(local_configuration)
+    # Create telescope object and load hardware configuration
+    telescope = EudaqScan(conf=None)  # None: use default hardware configuration, m26.yaml
 
     # Import EUDAQ python wrapper with error handling
     try:
         from PyEUDAQWrapper import PyProducer
     except ImportError:
         if not args.path:
-            logger.error('Cannot find PyEUDAQWrapper! '
-                         'Please specify the path of your EUDAQ installation!')
+            logger.error('Cannot find PyEUDAQWrapper! Please specify the path of your EUDAQ installation!')
             return
         else:
             wrapper_path = os.path.join(args.path, 'python/')
@@ -187,14 +195,10 @@ def main():
             logger.error('Cannot open %s for replay!', args.replay)
     delay = args.delay if args.delay else 0.
 
-    # EUDAQ fork https://github.com/duartej/eudaq/tree/v1.7-dev starts using a board_id
-    # starting from commit: https://github.com/duartej/eudaq/commit/be98b45f7dc6ac2186c9e021a1aa05e513334693
-    try:
-        pp = PyProducer(args.address, args.board_id)
-        logger.info('Use board id %s', args.board_id)
-    except TypeError:
-        pp = PyProducer(args.address)
-        logger.info('Board ID feature deactivated due to old EUDAQ version')
+    pp = PyProducer("pyBAR", args.address)  # FIXME: wrong type
+
+    # Initialize telescope hardware and set up parameters
+    ## telescope.init(init_conf=init_conf, configure_m26=False)
 
     # Start state mashine, keep connection until termination of euRun
     while not pp.Error and not pp.Terminating:
@@ -207,11 +211,14 @@ def main():
         # Check if configuration received
         if pp.Configuring:
             logger.info('Configuring...')
-            time.sleep(3)
-
             if not args.replay:
-                pass
-                # FIXME: use proper configuration step, issue #121
+                try:
+                    fix_filename = pp.GetConfigParameter("filename")
+                except ValueError:  # Not defined
+                    fix_filename = None
+                ## telescope.configure_m26()
+            else:
+                time.sleep(3)
             pp.Configuring = True
 
         # Check for start of run cmd from RunControl
@@ -226,40 +233,26 @@ def main():
 
             if not args.replay:
                 # Setup external trigge scan
-                scan = EudaqScan(record_chip_status=False)
-                scan.set_callback(pp.SendEvent)
-                thread = threading.Thread(target=scan.start, kwargs=config)
-                thread.start()
+                telescope.run_number = pp.GetRunNumber()
+                if fix_filename:
+                    telescope.output_filename = fix_filename
+                else:
+                    telescope.output_filename = 'pymosa_EUDAQ_RUN_%d' % pp.GetRunNumber()
+                logging.info('Store raw data in file %s', telescope.output_filename)
+
                 pp.StartingRun = True  # set status and send BORE
+                # Start telescope readout
+                ## telescope.start()
                 # Run loop for normal data taking
                 while True:
                     if pp.Error or pp.Terminating:
                         logger.info('Stopping run...')
-                        # FIXME: using not thread safe variable
-                        scan.stop_scan = True
-                        thread.join()
-                        # Send last remaining event
-                        scan.callback(scan.last_readout_data)
-                        scan.close()
-                        try:
-                            scan.analyze()
-                        # Analysis should never crash producer
-                        except:  # noqa: E722
-                            logger.warning('Analysis of data failed')
+                        telescope.stop_scan = True
                         break
                     if pp.StoppingRun:
                         logger.info('Stopping run...')
                         # FIXME: using not thread safe variable
-                        scan.stop_scan = True
-                        thread.join()
-                        # Send last remaining event
-                        scan.callback(scan.last_readout_data)
-                        scan.close()
-                        try:
-                            scan.analyze()
-                        # Analysis should never crash producer
-                        except:    # noqa: E722
-                            logger.warning('Analysis of data failed')
+                        telescope.stop_scan = True
                         break
                     time.sleep(0.1)
             else:  # Run loop to replay data
@@ -285,5 +278,5 @@ def main():
 
 if __name__ == "__main__":
     # When run in development environment, eudaq path can be added with:
-    sys.path.append('/home/user/git/eudaq/python/')
+    sys.path.append('/home/davidlp/git/eudaq/python/')
     main()
