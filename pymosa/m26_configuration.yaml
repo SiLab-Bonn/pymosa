@@ -6,6 +6,7 @@ m26_jtag_configuration : True  # Send Mimosa26 configuration via JTAG, default: 
 no_data_timeout : 30  # No data timeout after which the scan will be aborted, in seconds; if 0, the timeout is disabled
 scan_timeout : 0  # Timeout after which the scan will be stopped, in seconds; if 0, the timeout is disabled; use Ctrl-C to stop run
 max_triggers : 0  # Maximum number of triggers; if 0, there is no limit on the number of triggers; use Ctrl-C to stop run
+veto_time : 1 # Veto time after accepting one trigger (in units of 40 MHz clock cycles). Needed for EUDAQ mixed mode. Default: 1
 #send_data : 'tcp://127.0.0.1:4500'  # TCP address to which the telescope data is send; to allow incoming connections on all interfaces use 0.0.0.0
 #output_folder: telescope_data  # Name of the subfolder which will be created in order to store the telescope data
 #filename: run_1  # Filename of the telescope data file

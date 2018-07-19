@@ -69,6 +69,7 @@ class M26(object):
         self.no_data_timeout = self.telescope_conf.get('no_data_timeout', 0)  # default None: no data timeout
         self.scan_timeout = self.telescope_conf.get('scan_timeout', 0)  # default 0: no scan timeout
         self.max_triggers = self.telescope_conf.get('max_triggers', 0)  # default 0: infinity triggers
+        self.veto_time = self.telescope_conf.get('veto_time', 1)  # default 1: wait only 1 clock cycle after accepting a trigger
         self.send_data = self.telescope_conf.get('send_data', None)  # default None: do not send data to online monitor
 
         if not os.path.exists(self.working_dir):
@@ -123,6 +124,9 @@ class M26(object):
 
         # set the clock distributer inputs in correct states.
         self.set_clock_distributer()
+
+        # configure VETO pulser for TLU (needed for EUDAQ mixed mode operation).
+        self.configure_tlu_veto_pulser(veto_time=self.veto_time)
 
         # set M26 configuration file
         self.dut.set_configuration(m26_configuration_file)
@@ -194,6 +198,19 @@ class M26(object):
         sleep(reset_time)
         self.dut["START_RESET"]["RESET"] = 0
         self.dut["START_RESET"].write()
+
+    def configure_tlu_veto_pulser(self, veto_time=1):
+        ''' Configure VETO pulser for TLU. This is needed for
+            EUDAQ mixed mode operation in order to block triggers
+            for a configurable time (after accepting one trigger).
+            VETO time of 9216 40 MHz clock cylces corresponds
+            to 2 x 115.2 us (two Mimosa26 frames).
+        '''
+        logging.info('Setting veto time after accepting one trigger to %.3f us.' % (veto_time * 25. / 1000.))
+        self.dut['pulser_veto'].set_en(True)
+        self.dut['pulser_veto'].set_width(veto_time)
+        self.dut['pulser_veto'].set_delay(1)
+        self.dut['pulser_veto'].set_repeat(1)
 
     def scan(self):
         '''Scan Mimosa26 telescope loop.
@@ -392,6 +409,7 @@ def main():
     parser.add_argument('-r', '--run_number', type=int, metavar='<run number>', action='store', help='base run number (will be automatically increased)')
     parser.add_argument('--scan_timeout', type=int, metavar='<scan timeout>', action='store', help="scan timeout in seconds, default: 0 (disabled)")
     parser.add_argument('--max_triggers', type=int, metavar='<number of triggers>', action='store', help="maximum number of triggers, default: 0 (disabled)")
+    parser.add_argument('--veto_time', type=int, metavar='<Veto time for triggers>', action='store', help="veto time after accepting one trigger, default: 1")
     parser.add_argument('--no_m26_jtag_configuration', dest='no_m26_jtag_configuration', action='store_true', help='disable Mimosa26 configuration via JTAG')
     parser.set_defaults(no_m26_jtag_configuration=False)
     args = parser.parse_args()
@@ -410,6 +428,8 @@ def main():
         init_conf["scan_timeout"] = args.scan_timeout
     if args.max_triggers is not None:
         init_conf["max_triggers"] = args.max_triggers
+    if args.veto_time is not None:
+        init_conf["veto_time"] = args.veto_time
     if args.no_m26_jtag_configuration:
         init_conf["m26_jtag_configuration"] = False
 

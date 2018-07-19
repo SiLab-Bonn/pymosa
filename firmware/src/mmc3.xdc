@@ -242,6 +242,11 @@ set_false_path -from [get_pins {m26_gen[*].i_m26_rx/i_m26_rx_core/status_regs_re
 set_false_path -from [get_pins {m26_gen[*].i_m26_rx/i_m26_rx_core/status_regs_reg[*][*]/C}] -to [get_pins {m26_gen[*].i_m26_rx/i_m26_rx_core/conf_timestamp_header_synchronizer_clk_rx/out_d_ff_1_reg[0]/D}]
 # set_false_path -from [get_pins {m26_gen[*].i_m26_rx/i_m26_rx_core/LOST_DATA_CNT_reg[*]/C}] -to [get_pins {m26_gen[*].i_m26_rx/i_m26_rx_core/BUS_DATA_OUT_reg[*]/D}]
 
+set_false_path -from [get_pins {i_pulse_gen_veto/i_pulse_gen_core/CONF_EN_reg/C}] -to [get_pins {i_pulse_gen_veto/i_pulse_gen_core/conf_dely_sync/out_d_ff_1_reg[0]/D}]
+set_false_path -from [get_pins {i_pulse_gen_veto/i_pulse_gen_core/CONF_DELAY_reg[*]/C}] -to [get_pins {i_pulse_gen_veto/i_pulse_gen_core/conf_dely_sync/out_d_ff_1_reg[*]/D}]
+set_false_path -from [get_pins {i_pulse_gen_veto/i_pulse_gen_core/CONF_WIDTH_reg[*]/C}] -to [get_pins {i_pulse_gen_veto/i_pulse_gen_core/conf_width_sync/out_d_ff_1_reg[*]/D}]
+set_false_path -from [get_pins {i_pulse_gen_veto/i_pulse_gen_core/CONF_REPEAT_reg[*]/C}] -to [get_pins {i_pulse_gen_veto/i_pulse_gen_core/conf_repeat_sync/out_d_ff_1_reg[*]/D}]
+
 
 # Other
 set_property BITSTREAM.CONFIG.UNUSEDPIN PULLUP [current_design]

@@ -59,6 +59,11 @@ hw_drivers:
     interface : ETH
     base_addr : 0x8200
 
+  - name      : pulser_veto
+    type      : pulse_gen
+    interface : ETH
+    base_addr : 0x8300
+
   - name      : GPIO_JTAG
     type      : gpio
     interface : ETH
