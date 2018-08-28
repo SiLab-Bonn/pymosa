@@ -511,7 +511,7 @@ tlu_controller #(
 );
 
 reg [31:0] timestamp_gray;
-always@(posedge BUS_CLK)
+always@(posedge CLK40)
     timestamp_gray <=  (TIMESTAMP>>1) ^ TIMESTAMP;
 
 wire [5:0] M26_CLK;
@@ -587,8 +587,8 @@ generate
         integer gbi;
         always@(*) begin
             timestamp_m26[31] = timestamp_cdc1[31];
-            for(gbi  =30; gbi >= 0; gbi = gbi -1) begin
-                timestamp_m26[gbi] = timestamp_cdc1[gbi] ^ timestamp_m26[gbi+1];
+            for(gbi = 30; gbi >= 0; gbi = gbi - 1) begin
+                timestamp_m26[gbi] = timestamp_cdc1[gbi] ^ timestamp_m26[gbi + 1];
             end
         end
 
