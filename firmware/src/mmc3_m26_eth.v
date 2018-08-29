@@ -48,7 +48,7 @@ module mmc3_m26_eth(
 // ***********************************************************
 // *** change version number in case of functional changes ***
 // ***********************************************************
-localparam VERSION = 8'd5;
+localparam VERSION = 8'd6;
 
 wire RST;
 wire CLK125PLLTX, CLK125PLLTX90;

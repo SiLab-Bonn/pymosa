@@ -6,7 +6,7 @@
 #
 
 name    : m26_eth
-version : 5
+version : 6
 
 transfer_layer:
   - name  : ETH
