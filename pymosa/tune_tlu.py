@@ -181,3 +181,5 @@ if __name__ == "__main__":
     tune_tlu.init(init_conf=config)
     # Start telescope readout
     tune_tlu.start()
+    # Close the resources
+    tune_tlu.close()

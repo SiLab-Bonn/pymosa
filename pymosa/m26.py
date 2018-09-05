@@ -82,6 +82,9 @@ class m26(object):
         # FIFO readout
         self.m26_readout = M26Readout(dut=self.dut)
 
+    def close(self):
+        self.dut.close()
+
     def configure_m26(self, m26_configuration_file=None, m26_jtag_configuration=None):
         '''Configure Mimosa26 sensors via JTAG.
         '''
@@ -417,6 +420,8 @@ def main():
     telescope.init(init_conf=config)
     # Start telescope readout
     telescope.start()
+    # Close the resources
+    telescope.close()
 
 
 if __name__ == '__main__':
