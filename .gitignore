@@ -71,4 +71,5 @@ tests/*.h5
 # Simulation output
 sim_build
 
-output_data
+# default data output folder
+telescope_data
