@@ -48,9 +48,9 @@ class m26(object):
 
         # check firmware version
         fw_version = self.dut['ETH'].read(0x0000, 1)[0]
-        logging.info("MMC3 firmware version: %s" % (fw_version))
+        logging.info("Pymosa MMC3 firmware version: %s" % (fw_version))
         if int(self.dut.version) != fw_version:
-            raise Exception("MMC3 firmware version does not match DUT configuration file (read: %s, require: %s)" % (fw_version, int(self.dut.version)))
+            raise Exception("Pymosa MMC3 firmware version does not match DUT configuration file (read: %s, require: %s)" % (fw_version, int(self.dut.version)))
 
         # default configuration
         # use self.telescope_conf to store conf dict to telescope data file

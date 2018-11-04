@@ -24,7 +24,6 @@ module mmc3_m26_eth(
     output wire phy_rst_n,
 
     output wire [7:0] LED,
-    output wire [7:0] PMOD,
 
     input wire [5:0] M26_CLK_P, M26_CLK_N, M26_MKD_P, M26_MKD_N,
     input wire [5:0] M26_DATA1_P, M26_DATA1_N, M26_DATA0_P, M26_DATA0_N,
@@ -40,15 +39,16 @@ module mmc3_m26_eth(
     output wire M26_CLK_SPEAK_P, M26_CLK_SPEAK_N,
 
     output wire RJ45_BUSY_LEMO_TX1, RJ45_CLK_LEMO_TX0,
+    output wire [1:0] LEMO_TX, // individual LEMO TX only available on MMC3 revision 1.2
     input wire RJ45_TRIGGER, RJ45_RESET,
-    input wire [1:0] LEMO_RX
-
+    input wire [1:0] LEMO_RX,
+    inout wire [7:0] PMOD // 2-row PMOD header for general purpose IOs
 );
 
 // ***********************************************************
 // *** change version number in case of functional changes ***
 // ***********************************************************
-localparam VERSION = 8'd6;
+localparam VERSION = 8'd7;
 
 wire RST;
 wire CLK125PLLTX, CLK125PLLTX90;
@@ -212,13 +212,22 @@ wire TCP_TX_FULL;
 wire TCP_TX_WR;
 wire [7:0] TCP_TX_DATA;
 
+wire [7:0] PMOD_O;
+IOBUF iobuf_pmod [7:0] (
+    .O(PMOD_O),
+    .IO(PMOD),
+    .I({8'b1111_0000}),
+    .T({8'b0000_1111})
+);
+wire [7:0] IP_ADDR_SEL;
+assign IP_ADDR_SEL = {4'b0, PMOD_O[3], PMOD_O[2], PMOD_O[1], PMOD_O[0]}; // MSB: PMOD[3]; LSB: PMOD[0]
 
 WRAP_SiTCP_GMII_XC7K_32K sitcp(
     .CLK(BUS_CLK)                    ,    // in    : System Clock >129MHz
     .RST(RST)                    ,    // in    : System reset
     // Configuration parameters
     .FORCE_DEFAULTn(1'b0)        ,    // in    : Load default parameters
-    .EXT_IP_ADDR(32'hc0a80110)            ,    // in    : IP address[31:0] //192.168.1.16
+    .EXT_IP_ADDR({8'd192, 8'd168, 8'd10 + IP_ADDR_SEL, 8'd10})            ,    // in    : IP address[31:0] //192.168.10.10
     .EXT_TCP_PORT(16'd24)        ,    // in    : TCP port #[15:0]
     .EXT_RBCP_PORT(16'd4660)        ,    // in    : RBCP port #[15:0]
     .PHY_ADDR(5'd3)            ,    // in    : PHY-device MIF address[4:0]
@@ -467,6 +476,7 @@ wire TRIGGER_FIFO_READ;
 wire TRIGGER_FIFO_EMPTY;
 wire [31:0] TRIGGER_FIFO_DATA;
 wire [31:0] TIMESTAMP;
+wire TLU_BUSY, TLU_CLOCK;
 
 tlu_controller #(
     .BASEADDR(TLU_BASEADDR),
@@ -490,8 +500,8 @@ tlu_controller #(
 
     .FIFO_PREEMPT_REQ(),
 
-    .TRIGGER({8'b0}),
-    .TRIGGER_VETO({7'b0, FIFO_FULL}),
+    .TRIGGER({5'b0, LEMO_RX, RJ45_TRIGGER}),
+    .TRIGGER_VETO({5'b0, LEMO_RX, FIFO_FULL}),
     .TIMESTAMP_RESET(1'b0),
 
     .TRIGGER_ENABLED(),
@@ -504,11 +514,17 @@ tlu_controller #(
 
     .TLU_TRIGGER(RJ45_TRIGGER),
     .TLU_RESET(RJ45_RESET),
-    .TLU_BUSY(RJ45_BUSY_LEMO_TX1),
-    .TLU_CLOCK(RJ45_CLK_LEMO_TX0),
+    .TLU_BUSY(TLU_BUSY),
+    .TLU_CLOCK(TLU_CLOCK),
 
+    .EXT_TIMESTAMP(),
     .TIMESTAMP(TIMESTAMP)
 );
+
+assign RJ45_BUSY_LEMO_TX1 = TLU_BUSY;
+assign LEMO_TX[1] = RJ45_BUSY_LEMO_TX1; // add LEMO TX0 and TX1 for MMC3 revision 1.2; LEMO TX0 and TX1 are not connected to RJ45_CLK_LEMO_TX0 and RJ45_BUSY_LEMO_TX1 anymore
+assign RJ45_CLK_LEMO_TX0 = TLU_CLOCK;
+assign LEMO_TX[0] = RJ45_CLK_LEMO_TX0; // add LEMO TX0 and TX1 for MMC3 revision 1.2; LEMO TX0 and TX1 are not connected to RJ45_CLK_LEMO_TX0 and RJ45_BUSY_LEMO_TX1 anymore
 
 reg [31:0] timestamp_gray;
 always@(posedge CLK40)
@@ -698,7 +714,5 @@ assign LED[0] = CLK_1HZ;
 assign LED[1] = ~FIFO_FULL;
 assign LED[2] = ~|LOST_ERROR;
 assign LED[3] = ~INVALID;
-
-assign PMOD[7:0] = 8'b0;
 
 endmodule
