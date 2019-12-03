@@ -1,21 +1,3 @@
-
-create_clock -period 10.000 -name clkin -add [get_ports clkin]
-create_clock -period 8.000 -name rgmii_rxc -add [get_ports rgmii_rxc]
-
-set_false_path -from [get_clocks CLK125PLLTX] -to [get_clocks BUS_CLK_PLL]
-set_false_path -from [get_clocks BUS_CLK_PLL] -to [get_clocks CLK125PLLTX]
-set_false_path -from [get_clocks BUS_CLK_PLL] -to [get_clocks rgmii_rxc]
-set_false_path -from [get_clocks rgmii_rxc] -to [get_clocks BUS_CLK_PLL]
-set_false_path -from [get_clocks BUS_CLK_PLL] -to [get_clocks rgmii_rxc]
-set_false_path -from [get_clocks rgmii_rxc] -to [get_clocks BUS_CLK_PLL]
-set_false_path -from [get_clocks CLK16_PLL] -to [get_clocks BUS_CLK_PLL]
-set_false_path -from [get_clocks BUS_CLK_PLL] -to [get_clocks CLK16_PLL]
-set_false_path -from [get_clocks CLK160_PLL] -to [get_clocks BUS_CLK_PLL]
-set_false_path -from [get_clocks BUS_CLK_PLL] -to [get_clocks CLK160_PLL]
-set_false_path -from [get_clocks CLK40_PLL] -to [get_clocks BUS_CLK_PLL]
-set_false_path -from [get_clocks BUS_CLK_PLL] -to [get_clocks CLK40_PLL]
-
-#NET "Clk100" 				LOC =  "AA3" | IOSTANDARD = "LVCMOS15"; 100MHz
 set_property PACKAGE_PIN AA3 [get_ports clkin]
 set_property IOSTANDARD LVCMOS15 [get_ports clkin]
 
@@ -83,21 +65,7 @@ set_property IOSTANDARD LVCMOS25 [get_ports LED*]
 set_property SLEW SLOW [get_ports LED*]
 
 
-#PORT 0?
-#set_property PACKAGE_PIN B9 [get_ports CMD_CLK_N]
-#set_property PACKAGE_PIN D8 [get_ports CMD_DATA_N]
-#set_property IOSTANDARD LVDS_25 [get_ports CMD_CLK*]
-#set_property IOSTANDARD LVDS_25 [get_ports CMD_DATA*]
-#set_property PACKAGE_PIN H12 [get_ports RJ45_HITOR_P]
-#set_property PACKAGE_PIN H11 [get_ports RJ45_HITOR_N]
-#set_property IOSTANDARD LVDS_25 [get_ports RJ45_HITOR*]
-#set_property PACKAGE_PIN J10 [get_ports DOBOUT_N]
-#set_property IOSTANDARD LVDS_25 [get_ports DOBOUT*]
-#set_property KEEPER true [get_ports DOBOUT_P]
-
-set_property BITSTREAM.CONFIG.UNUSEDPIN PULLUP [current_design]
-
-#####
+# Mimosa26 IO
 set_property PACKAGE_PIN F9 [get_ports {M26_DATA1_P[0]}]
 set_property PACKAGE_PIN F8 [get_ports {M26_DATA1_N[0]}]
 set_property PACKAGE_PIN C12 [get_ports {M26_MKD_P[0]}]
@@ -152,52 +120,33 @@ set_property PACKAGE_PIN A10 [get_ports {M26_MKD_N[5]}]
 set_property PACKAGE_PIN C16 [get_ports {M26_DATA1_P[5]}]
 set_property PACKAGE_PIN B16 [get_ports {M26_DATA1_N[5]}]
 
-set_property IOSTANDARD LVDS_25 [get_ports M26_*]
 
-#set_property PACKAGE_PIN A19 [get_ports {M26_CLK_N[6]}]
-#set_property PACKAGE_PIN C18 [get_ports {M26_MKD_N[6]}]
-#set_property PACKAGE_PIN E17 [get_ports {M26_DATA0_N[6]}]
-#set_property PACKAGE_PIN E16 [get_ports {M26_DATA1_N[6}]
-
-create_clock -period 12.500 -name m26_clk0 -add [get_ports {M26_CLK_P[0]}]
-create_clock -period 12.500 -name m26_clk1 -add [get_ports {M26_CLK_P[1]}]
-create_clock -period 12.500 -name m26_clk2 -add [get_ports {M26_CLK_P[2]}]
-create_clock -period 12.500 -name m26_clk3 -add [get_ports {M26_CLK_P[3]}]
-create_clock -period 12.500 -name m26_clk4 -add [get_ports {M26_CLK_P[4]}]
-create_clock -period 12.500 -name m26_clk5 -add [get_ports {M26_CLK_P[5]}]
-
-set_false_path -from [get_clocks m26_clk0] -to [get_clocks BUS_CLK_PLL]
-set_false_path -from [get_clocks m26_clk1] -to [get_clocks BUS_CLK_PLL]
-set_false_path -from [get_clocks m26_clk2] -to [get_clocks BUS_CLK_PLL]
-set_false_path -from [get_clocks m26_clk3] -to [get_clocks BUS_CLK_PLL]
-set_false_path -from [get_clocks m26_clk4] -to [get_clocks BUS_CLK_PLL]
-set_false_path -from [get_clocks m26_clk5] -to [get_clocks BUS_CLK_PLL]
-
-set_false_path -from [get_clocks BUS_CLK_PLL] -to [get_clocks m26_clk0]
-set_false_path -from [get_clocks BUS_CLK_PLL] -to [get_clocks m26_clk1]
-set_false_path -from [get_clocks BUS_CLK_PLL] -to [get_clocks m26_clk2]
-set_false_path -from [get_clocks BUS_CLK_PLL] -to [get_clocks m26_clk3]
-set_false_path -from [get_clocks BUS_CLK_PLL] -to [get_clocks m26_clk4]
-set_false_path -from [get_clocks BUS_CLK_PLL] -to [get_clocks m26_clk5]
-
-## Port 7
-set_property PACKAGE_PIN A19 [get_ports M26_TCK_N]
-set_property PACKAGE_PIN A18 [get_ports M26_TCK_P]
+# Port 7
 set_property IOSTANDARD LVDS_25 [get_ports M26_TCK*]
+set_property PACKAGE_PIN A18 [get_ports M26_TCK_P]
+set_property PACKAGE_PIN A19 [get_ports M26_TCK_N]
 
+set_property IOSTANDARD LVDS_25 [get_ports M26_TMS*]
 set_property PACKAGE_PIN F17 [get_ports M26_TMS_P]
 set_property PACKAGE_PIN E17 [get_ports M26_TMS_N]
-set_property IOSTANDARD LVDS_25 [get_ports M26_TMS*]
 
+set_property IOSTANDARD LVDS_25 [get_ports M26_TDI*]
 set_property PACKAGE_PIN E15 [get_ports M26_TDI_P]
 set_property PACKAGE_PIN E16 [get_ports M26_TDI_N]
-set_property IOSTANDARD LVDS_25 [get_ports M26_TDI*]
 
-set_property PACKAGE_PIN F15 [get_ports M26_TDO_N]
 set_property PACKAGE_PIN G15 [get_ports M26_TDO_P]
+set_property PACKAGE_PIN F15 [get_ports M26_TDO_N]
 set_property IOSTANDARD LVDS_25 [get_ports M26_TDO*]
 
+set_property PACKAGE_PIN C9 [get_ports M26_CLK_CLK_P]
+set_property PACKAGE_PIN D9 [get_ports M26_CLK_RESET_P]
+set_property PACKAGE_PIN J11 [get_ports M26_CLK_SPEAK_P]
+set_property PACKAGE_PIN H12 [get_ports M26_CLK_START_P]
 
+set_property IOSTANDARD LVDS_25 [get_ports M26_*]
+
+
+# TLU/Trigger
 set_property PACKAGE_PIN V23 [get_ports RJ45_BUSY_LEMO_TX1]
 set_property PACKAGE_PIN AB21 [get_ports RJ45_CLK_LEMO_TX0]
 set_property PACKAGE_PIN V21 [get_ports RJ45_TRIGGER]
@@ -210,16 +159,53 @@ set_property IOSTANDARD LVCMOS25 [get_ports RJ45_TRIGGER]
 set_property PACKAGE_PIN U26 [get_ports {LEMO_RX[1]}]
 set_property PACKAGE_PIN U22 [get_ports {LEMO_RX[0]}]
 set_property IOSTANDARD LVCMOS25 [get_ports LEMO_RX*]
+# add LEMO TX0 and TX1 for MMC3 revision 1.2; LEMO TX0 and TX1 are not connected to RJ45_CLK_LEMO_TX0 and RJ45_BUSY_LEMO_TX1 anymore
+set_property PACKAGE_PIN V22 [get_ports {LEMO_TX[0]}]
+set_property PACKAGE_PIN W21 [get_ports {LEMO_TX[1]}]
+set_property IOSTANDARD LVCMOS25 [get_ports LEMO_TX*]
 
 
-#set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets p_23_out]
+# PMOD
+# +-------------------------+
+# | 6(VCC)  5(GND)  4 3 2 1 |*
+# |12(VCC) 11(GND) 10 9 8 7 |
+# +-------------------------+
+#
+# PMOD connector pin 1-->PMOD[0]; pin 2-->PMOD[1]; pin 3-->PMOD[2]; pin 4-->PMOD[3];
+set_property PACKAGE_PIN V26 [get_ports {PMOD[0]}]
+set_property PACKAGE_PIN V24 [get_ports {PMOD[1]}]
+set_property PACKAGE_PIN AB25 [get_ports {PMOD[2]}]
+set_property PACKAGE_PIN AA25 [get_ports {PMOD[3]}]
+# PMOD connector pin 7-->PMOD[4]; pin 8-->PMOD[5]; pin 9-->PMOD[6]; pin 10-->PMOD[7];
+set_property PACKAGE_PIN W26 [get_ports {PMOD[4]}]
+set_property PACKAGE_PIN W25 [get_ports {PMOD[5]}]
+set_property PACKAGE_PIN AC24 [get_ports {PMOD[6]}]
+set_property PACKAGE_PIN AC23 [get_ports {PMOD[7]}]
+set_property IOSTANDARD LVCMOS25 [get_ports PMOD*]
+set_property DRIVE 16 [get_ports PMOD*]
+# pull down the PMOD pins which are used as inputs
+set_property PULLDOWN true [get_ports {PMOD[0]}]
+set_property PULLDOWN true [get_ports {PMOD[1]}]
+set_property PULLDOWN true [get_ports {PMOD[2]}]
+set_property PULLDOWN true [get_ports {PMOD[3]}]
 
-#set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets n_0_m26_gen[0].IBUFDS_inst_M26_CLK]
-#set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets n_0_m26_gen[1].IBUFDS_inst_M26_CLK]
-#set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets n_0_m26_gen[2].IBUFDS_inst_M26_CLK]
-#set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets n_0_m26_gen[3].IBUFDS_inst_M26_CLK]
-#set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets n_0_m26_gen[4].IBUFDS_inst_M26_CLK]
-#set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets n_0_m26_gen[5].IBUFDS_inst_M26_CLK]
+
+# Clocks
+create_clock -period 10.000 -name clkin -add [get_ports clkin]
+create_clock -period 8.000 -name rgmii_rxc -add [get_ports rgmii_rxc]
+# create_generated_clock -name CLK_MII_TX -source [get_pins rgmii/ODDR_inst/C] -divide_by 1 [get_ports rgmii_txc]
+set_clock_groups -asynchronous \
+-group [get_clocks -include_generated_clocks clkin] \
+-group rgmii_rxc
+set_clock_groups -logically_exclusive \
+-group rgmii_rxc \
+-group {CLK125_PLL CLK125_90_PLL}
+create_clock -period 12.500 -name m26_clk0 -add [get_ports {M26_CLK_P[0]}]
+create_clock -period 12.500 -name m26_clk1 -add [get_ports {M26_CLK_P[1]}]
+create_clock -period 12.500 -name m26_clk2 -add [get_ports {M26_CLK_P[2]}]
+create_clock -period 12.500 -name m26_clk3 -add [get_ports {M26_CLK_P[3]}]
+create_clock -period 12.500 -name m26_clk4 -add [get_ports {M26_CLK_P[4]}]
+create_clock -period 12.500 -name m26_clk5 -add [get_ports {M26_CLK_P[5]}]
 
 set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets M26_CLK_0]
 set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets M26_CLK_1]
@@ -228,3 +214,39 @@ set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets M26_CLK_3]
 set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets M26_CLK_4]
 set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets M26_CLK_5]
 
+
+# Timing Constraints
+# set false path for GMII mode selector
+set_false_path -from [get_pins GMII_1000M_reg/C]
+# set false path for some outputs
+set_false_path -to [get_ports PMOD*]
+set_false_path -to [get_ports LED*]
+# set max delay for CDC
+set_max_delay -from [get_clocks -of_objects [get_pins PLLE2_BASE_inst_2/CLKOUT1]] -to [get_clocks m26_clk*] 7.5 -datapath_only
+set_max_delay -from [get_clocks m26_clk*] -to [get_clocks -of_objects [get_pins PLLE2_BASE_inst_2/CLKOUT1]] 12.5 -datapath_only
+# set false path and max delay for some control registers
+set_false_path -from [get_pins {i_tlu_controller/i_tlu_controller_core/status_regs_reg[*][*]/C}] -to [get_pins {i_tlu_controller/i_tlu_controller_core/three_stage_lemo_trigger_synchronizer_trg_clk/out_d_ff_1_reg[0]/D}]
+set_false_path -from [get_pins {i_tlu_controller/i_tlu_controller_core/status_regs_reg[*][*]/C}] -to [get_pins {i_tlu_controller/i_tlu_controller_core/three_stage_lemo_ext_veto_synchronizer_trg_clk/out_d_ff_1_reg[0]/D}]
+set_false_path -from [get_pins {i_tlu_controller/i_tlu_controller_core/status_regs_reg[*][*]/C}] -to [get_pins {i_tlu_controller/i_tlu_controller_core/three_stage_trigger_mode_synchronizer/out_d_ff_1_reg[*]/D}]
+set_false_path -from [get_pins {i_tlu_controller/i_tlu_controller_core/status_regs_reg[*][*]/C}] -to [get_pins {i_tlu_controller/i_tlu_controller_core/three_stage_trigger_data_msb_first_synchronizer/out_d_ff_1_reg[0]/D}]
+set_false_path -from [get_pins {i_tlu_controller/i_tlu_controller_core/status_regs_reg[*][*]/C}] -to [get_pins {i_tlu_controller/i_tlu_controller_core/three_stage_conf_trigger_enable_synchronizer/out_d_ff_1_reg[0]/D}]
+set_false_path -from [get_pins {i_tlu_controller/i_tlu_controller_core/status_regs_reg[*][*]/C}] -to [get_pins {i_tlu_controller/i_tlu_controller_core/three_stage_conf_ext_ts_synchronizer/out_d_ff_1_reg[0]/D}]
+set_false_path -from [get_pins {i_tlu_controller/i_tlu_controller_core/status_regs_reg[*][*]/C}] -to [get_pins {i_tlu_controller/i_tlu_controller_core/three_stage_conf_data_format_synchronizer/out_d_ff_1_reg[*]/D}]
+set_false_path -from [get_pins {i_tlu_controller/i_tlu_controller_core/status_regs_reg[*][*]/C}] -to [get_pins {i_tlu_controller/i_tlu_controller_core/three_stage_enable_tlu_reset_ts_synchronizer/out_d_ff_1_reg[0]/D}]
+set_false_path -from [get_pins {i_tlu_controller/i_tlu_controller_core/status_regs_reg[*][*]/C}] -to [get_pins {i_tlu_controller/i_tlu_controller_core/three_stage_tlu_en_veto_synchronizer/out_d_ff_1_reg[0]/D}]
+set_false_path -from [get_pins -regexp {i_tlu_controller/i_tlu_controller_core/status_regs_reg\[([2-7]|2[5-9]|30|33|35)\]\[([0-7])\]/C}]
+set_max_delay -from [get_pins {i_tlu_controller/i_tlu_controller_core/TRIGGER_COUNTER_reg[*]/C}] -to [get_pins {i_tlu_controller/i_tlu_controller_core/TRIGGER_COUNTER_SYNC_reg[*]/D}] 10.0
+set_false_path -from [get_pins {i_tlu_controller/i_tlu_controller_core/LOST_DATA_CNT_reg[*]/C}] -to [get_pins {i_tlu_controller/i_tlu_controller_core/BUS_DATA_OUT_reg[*]/D}]
+
+set_false_path -from [get_pins {m26_gen[*].i_m26_rx/i_m26_rx_core/status_regs_reg[*][*]/C}] -to [get_pins {m26_gen[*].i_m26_rx/i_m26_rx_core/conf_en_synchronizer_clk_rx/out_d_ff_1_reg[0]/D}]
+set_false_path -from [get_pins {m26_gen[*].i_m26_rx/i_m26_rx_core/status_regs_reg[*][*]/C}] -to [get_pins {m26_gen[*].i_m26_rx/i_m26_rx_core/conf_timestamp_header_synchronizer_clk_rx/out_d_ff_1_reg[0]/D}]
+# set_false_path -from [get_pins {m26_gen[*].i_m26_rx/i_m26_rx_core/LOST_DATA_CNT_reg[*]/C}] -to [get_pins {m26_gen[*].i_m26_rx/i_m26_rx_core/BUS_DATA_OUT_reg[*]/D}]
+
+
+# Other
+set_property BITSTREAM.CONFIG.UNUSEDPIN PULLUP [current_design]
+set_property BITSTREAM.CONFIG.SPI_BUSWIDTH 4 [current_design]
+set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
+set_property BITSTREAM.CONFIG.CONFIGRATE 33 [current_design]
+set_property CONFIG_VOLTAGE 3.3 [current_design]
+set_property CFGBVS VCCO [current_design]

@@ -1,8 +1,7 @@
 # Core functionality
-basil_daq>=2.4.10 # readout framework pyBAR is built on
-pySiLibUSB # support for SiLab USB devices
+basil_daq>=2.4.12,<3.0.0
 bitarray>=0.8.1
 numpy
-progressbar-latest>=2.4
 tables
 pyyaml
+progressbar-latest>=2.4

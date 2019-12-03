@@ -43,10 +43,6 @@ coverage.xml
 docs/_build/
 # PyBuilder
 target/
-# some pyBAR scan data folders, how to get all new folders?
-module_*/
-scc_*/
-proto_*/
 # PyDev files
 *.project
 *.pydevproject
@@ -75,4 +71,5 @@ tests/*.h5
 # Simulation output
 sim_build
 
-output_data
+# default data output folder
+telescope_data

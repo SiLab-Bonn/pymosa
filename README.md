@@ -16,30 +16,42 @@ For powering the MMC3 readout board a 5 V DC power supply is needed.
 
 Within pymosa the configuration can be set with the following files:
 
- - **configuration.yaml**:
-   Main configuration file in which run is set up and triggers are configured.
- - **/m26_config/mmc3_anemone_th11.yaml** (or other thresholds):
-   Contains Mimosa26 sensor configuration. By changing the number of the configuration file, the sensor threshold can be changed (between 4 - 11).
  - **m26.yaml**:
    Basil configuration file containing all the necessary information about the DUT (hardware setup).
+ - **m26_configuration.yaml**:
+   Main configuration file in which run is set up and triggers are configured.
+ - **/m26_config/m26_threshold_8.yaml**:
+   Contains Mimosa26 sensor configuration. By changing the number of the configuration file, the sensor threshold can be changed (between 4 - 11, default: 8).
+
 
 ## Installation
-Install [conda](http://conda.pydata.org).
+Install [Anacoda](http://conda.pydata.org).
 
 Install additional required packages:
 ```bash
 conda install bitarray numpy pytables pyyaml
+pip install progressbar-latest
+```
+
+Install [Basil](https://github.com/SiLab-Bonn/basil) (>=2.4.12,<3.0.0):
+```bash
+pip install 'basil_daq>=2.4.12,<3.0.0'
 ```
 
 Finally, install pymosa via:
 ```bash
-pip install pymosa
+python setup.py develop
 ```
 
 ## Usage
-Before running telescope readout setup run and trigger configuration in configuration file (e.g. configuration.yaml).
+Before running telescope readout setup run and trigger configuration in configuration file (e.g. m26_configuration.yaml).
 
 Run telescope readout via:
 ```bash
-python m26.py
+pymosa
+```
+
+Get help with:
+```bash
+pymosa --help
 ```

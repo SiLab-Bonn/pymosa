@@ -1,0 +1,5 @@
+include README.* VERSION LICENSE requirements.txt
+include pymosa/*.yaml
+recursive-include firmware *
+recursive-include pymosa/m26_config *
+recursive-include pymosa/firmware *
