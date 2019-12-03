@@ -335,9 +335,6 @@ tcp_to_bus itcp_to_bus (
 localparam TLU_BASEADDR = 32'h8200;
 localparam TLU_HIGHADDR = 32'h8300-1;
 
-localparam TDC_BASEADDR = 32'h8700;
-localparam TDC_HIGHADDR = 32'h8800-1;
-
 localparam M26_RX_BASEADDR = 32'ha000;
 localparam M26_RX_HIGHADDR = 32'ha00f-1;
 
@@ -657,13 +654,6 @@ generate
 
 end
 endgenerate
-
-wire TDC_FIFO_READ;
-wire TDC_FIFO_EMPTY;
-wire [31:0] TDC_FIFO_DATA;
-wire LEMO_TRIGGER_FROM_TDC;
-wire TDC_IN_FROM_TDC;
-wire RJ45_HITOR;
 
 wire ARB_READY_OUT, ARB_WRITE_OUT;
 wire [31:0] ARB_DATA_OUT;
