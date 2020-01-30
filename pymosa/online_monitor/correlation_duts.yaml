@@ -1,0 +1,17 @@
+M26 :
+    n_columns : 1152
+    column_size : 18.4
+    n_rows : 576
+    row_size : 18.4
+
+FE-I4 :
+    n_columns : 336
+    column_size : 50
+    n_rows : 80
+    row_size : 250
+ 
+RD53 :
+    n_columns : 400
+    column_size : 50
+    n_rows : 192
+    row_size : 40
