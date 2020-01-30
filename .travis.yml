@@ -26,7 +26,6 @@ install:
   - conda list
 
   # Install basil
-  #- git clone -b v3.0.0 https://github.com/SiLab-Bonn/basil; cd basil; python setup.py develop; cd ..;
   - pip install basil-daq<3.0.0
   
   # Install pybar_mimosa26_interpreter
