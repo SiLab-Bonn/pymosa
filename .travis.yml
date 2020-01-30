@@ -25,5 +25,17 @@ install:
   - pip install -e .
   - conda list
 
+  # Install basil
+  #- git clone -b v3.0.0 https://github.com/SiLab-Bonn/basil; cd basil; python setup.py develop; cd ..;
+  - pip install basil-daq<3.0.0
+  
+  # Install pybar_mimosa26_interpreter
+  git clone -b master https://github.com/SiLab-Bonn/pyBAR_mimosa26_interpreter; cd pyBAR_mimosa26_interpreter; python setup.py develop; cd ..;
+  
+  # Install pymosa
+  - python setup.py develop
+
 script:
-  - nosetests
+  # - nosetests
+  - cd tests
+  - pytest -s -v
