@@ -1,19 +1,26 @@
 # pymosa [![Build Status](https://travis-ci.org/SiLab-Bonn/pymosa.svg?branch=master)](https://travis-ci.org/SiLab-Bonn/pymosa)
 
-A Mimosa26 telescope readout in Python with MMC3 (Multi Module Card) hardware
+A readout software for [Mimosa26](http://www.iphc.cnrs.fr/List-of-MIMOSA-chips.html) CMOS pixel sensors in Python together with the FPGA-based MMC3 (Multi Module Card) readout hardware.
 
 ## Description
 
-Pymosa features continuous and triggerless data taking of up to 6 Mimosa26 sensors, enabling operation at particle rates of up to 20 kHz.
-The configuration of the Mimosa26 sensors can also be done with pymosa (via JTAG).
+Pymosa features continuous and triggerless data taking of up to 6 Mimosa26 sensors.
+Pymosa enables the operation of Mimosa26 sensors at high particle rates (at several hundred kilohertz).
+The Mimosa26 sensors are also configured with pymosa via a JTAG interface.
 
-Readout and configuration are based on a single FPGA-readout board, the MMC3 readout board.
+The data of each Mimosa26 sensors is send serially to the readout board using the dual-channel outputs at 80MHz data rate.
+Six of the eight RJ45 connectors are designated to interconnect with the Mimosa26 sensors.
+One RJ45 connector is used for JTAG interface for the configuration of the Mimosa26 sensors.
+The time information for the Mimosa26 hit data is generated in the FPGA on the MMC3 readout board to allow for precise timing of each hit (115.2us time resolution).
+This time resolution is sufficient to generate telescope tracks with high efficiency even in a high-density beam.
 
-The data of the Mimosa26 sensors is streamed continuously to the readout board using RJ45 connectors. An additional RJ45 connection is used for the
-configuration (JTAG) of the Mimosa26 sensors. An extra RJ45 connection provides the interface with the TLU.
-Trigger words from TLU are needed in order to correlate Mimosa26 frame data with a time reference plane in order to obtain a time information for Mimosa26 data.
-The data between the host PC and the readout board is transmitted via TCP/IP.
-For powering the MMC3 readout board a 5 V DC power supply is needed.
+The raw data (time information together with the Mimosa26 raw data) is collected by the MMC3 readout board and send to the host PC via TCP/IP where it is compressed and recorded in a HDF5 file.
+The raw data can be analyzed with the [Mimosa26 Interpreter](https://github.com/SiLab-Bonn/pyBAR_mimosa26_interpreter).
+The analyzed data (hit information and time information) can be obtained from a HDF5 table.
+
+An additional RJ45 connector provides an interface to the [EUDET Trigger Logic Unit](https://www.eudet.org/e26/e28/e42441/e57298/EUDET-MEMO-2009-04.pdf) (TLU).
+A trigger from the TLU is used for the generation of additional trigger timestamps and counters in the FPGA on the MMC3 readout board.
+The trigger data is used to correlate the Mimosa26 hit data with data from other detectors.
 
 Within pymosa the configuration can be set with the following files:
 
@@ -26,6 +33,7 @@ Within pymosa the configuration can be set with the following files:
 
 
 ## Installation
+
 Install [Anacoda](http://conda.pydata.org).
 
 Install additional required packages:
@@ -45,6 +53,7 @@ python setup.py develop
 ```
 
 ## Usage
+
 Before running telescope readout setup run and trigger configuration in configuration file (e.g. m26_configuration.yaml).
 
 Run telescope readout via:
@@ -56,3 +65,7 @@ Get help with:
 ```bash
 pymosa --help
 ```
+
+## Support
+
+Please use GitHub's [issue tracker](https://github.com/SiLab-Bonn/pymosa/issues) for bug reports/feature requests/questions.
