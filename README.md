@@ -34,7 +34,7 @@ Within pymosa the configuration can be set with the following files:
 
 ## Installation
 
-Install [Anacoda](http://conda.pydata.org).
+Python 2.7 or Python 3 or higher must be used. There are many ways to install Python, though we recommend using [Anaconda Python](https://www.anaconda.com/distribution/) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html).
 
 Install additional required packages:
 ```bash
@@ -49,7 +49,7 @@ pip install 'basil_daq>=2.4.12,<3.0.0'
 
 Finally, install pymosa via:
 ```bash
-python setup.py develop
+pip insall -e .
 ```
 
 ## Usage
