@@ -13,7 +13,7 @@ from contextlib import contextmanager
 from threading import Timer
 
 import yaml
-import progressbar
+from tqdm import tqdm
 
 from basil.dut import Dut
 from basil.utils.BitLogic import BitLogic
@@ -209,21 +209,21 @@ class m26(object):
                         got_data = True
                         logging.info('Taking data...')
                         if self.max_triggers:
-                            self.progressbar = progressbar.ProgressBar(widgets=['', progressbar.Percentage(), ' ', progressbar.Bar(marker='*', left='|', right='|'), ' ', progressbar.AdaptiveETA()], maxval=self.max_triggers, poll=10, term_width=80).start()
+                            self.pbar = tqdm(total=self.max_triggers, ncols=80)
                         else:
-                            self.progressbar = progressbar.ProgressBar(widgets=['', progressbar.Percentage(), ' ', progressbar.Bar(marker='*', left='|', right='|'), ' ', progressbar.Timer()], maxval=self.scan_timeout, poll=10, term_width=80).start()
+                            self.pbar = tqdm(total=self.scan_timeout, ncols=80)
                 else:
                     triggers = self.dut['TLU']['TRIGGER_COUNTER']
                     try:
                         if self.max_triggers:
-                            self.progressbar.update(triggers)
+                            self.pbar.update(triggers - self.pbar.n)
                         else:
-                            self.progressbar.update(time() - start)
+                            self.pbar.update(time() - start - self.pbar.n)
                     except ValueError:
                         pass
                     if self.max_triggers and triggers >= self.max_triggers:
                         self.stop_scan = True
-                        self.progressbar.finish()
+                        self.pbar.close()
                         logging.info('Trigger limit was reached: %i' % self.max_triggers)
 
         logging.info('Total amount of triggers collected: %d', self.dut['TLU']['TRIGGER_COUNTER'])
@@ -304,10 +304,6 @@ class m26(object):
         self.m26_readout.print_readout_status()
 
         def timeout():
-            try:
-                self.progressbar.finish()
-            except AttributeError:
-                pass
             self.stop_scan = True
             logging.info('Scan timeout was reached')
 

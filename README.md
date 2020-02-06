@@ -38,8 +38,7 @@ Python 2.7 or Python 3 or higher must be used. There are many ways to install Py
 
 Install additional required packages:
 ```bash
-conda install bitarray numpy pytables pyyaml
-pip install progressbar-latest
+conda install bitarray numpy pytables pyyaml tqdm
 ```
 
 Install [Basil](https://github.com/SiLab-Bonn/basil) (>=2.4.12,<3.0.0):

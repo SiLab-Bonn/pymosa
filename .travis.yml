@@ -20,8 +20,7 @@ install:
   - export PATH="$HOME/miniconda/bin:$PATH"
   - conda update --yes conda
   - conda info -a
-  - conda install --yes bitarray numpy pytables pyyaml nose
-  - pip install progressbar-latest
+  - conda install --yes bitarray numpy pytables pyyaml tqdm nose
   - pip install -e .
   - conda list
 
