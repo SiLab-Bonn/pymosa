@@ -1,4 +1,5 @@
-# pymosa
+# pymosa [![Build Status](https://travis-ci.org/SiLab-Bonn/pymosa.svg?branch=master)](https://travis-ci.org/SiLab-Bonn/pymosa)
+
 A Mimosa26 telescope readout in Python with MMC3 (Multi Module Card) hardware
 
 ## Description
