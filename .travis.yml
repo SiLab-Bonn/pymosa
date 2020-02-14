@@ -23,7 +23,7 @@ install:
   - conda create --yes -n test-environment python="$TRAVIS_PYTHON_VERSION" bitarray numpy pytables pyyaml tqdm nose
   - source activate test-environment
   # Install basil
-  - pip install basil-daq<3.0.0  
+  - pip install basil-daq>=3.0.0<4
   # Install pybar_mimosa26_interpreter
   - pip install git+https://github.com/SiLab-Bonn/pyBAR_mimosa26_interpreter@master
   - pip install -e .
