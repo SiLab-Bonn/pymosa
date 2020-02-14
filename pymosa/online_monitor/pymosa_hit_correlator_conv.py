@@ -94,7 +94,7 @@ class HitCorrelator(Transceiver):
         # Load correlation DUT types
         config = os.path.join(os.path.dirname(__file__), 'correlation_duts.yaml')
         with open(config) as f:
-            self.correlator_config = yaml.load(f)
+            self.correlator_config = yaml.safe_load(f)
 
     def deserialize_data(self, data):  # According to pyBAR data serilization
         datar, meta = utils.simple_dec(data)
