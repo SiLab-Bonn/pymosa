@@ -6,3 +6,4 @@ tables
 pyyaml
 tqdm
 online_monitor>=0.4<0.5
+pyqt
