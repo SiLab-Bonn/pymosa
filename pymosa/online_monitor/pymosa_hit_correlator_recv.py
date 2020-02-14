@@ -30,7 +30,7 @@ class HitCorrelator(Receiver):
 
         dock_area = DockArea()
         parent.addTab(dock_area, name)
-        # send active tab index to converter so that it only does something when user is looking at corresponding receiver
+        # Send active tab index to converter so that it only does something when user is looking at corresponding receiver
         parent.currentChanged.connect(lambda value: self.send_command('ACTIVETAB %s' % str(parent.tabText(value))))
 
         dock_status = Dock("Status")
