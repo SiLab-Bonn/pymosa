@@ -111,7 +111,7 @@ class m26(object):
                 self.dut['JTAG'].scan_ir([BitLogic(IR[ir])] * 6)
                 ret[ir] = self.dut['JTAG'].scan_dr([self.dut[ir][:]])[0]
             # check registers
-            for k, v in ret.iteritems():
+            for k, v in ret.items():
                 if k == "CTRL_8b10b_REG1_ALL":
                     pass
                 elif k == "BSR_ALL":
@@ -205,7 +205,7 @@ class m26(object):
             while not self.stop_scan:
                 sleep(1.0)
                 if not got_data:
-                    if self.m26_readout.data_words_per_second() > 0:
+                    if self.m26_readout.data_words_per_second()[0] > 0:
                         got_data = True
                         logging.info('Taking data...')
                         if self.max_triggers:
@@ -396,7 +396,7 @@ def main():
     # Open Mimosa26 std. configuration
     pymosa_path = os.path.dirname(pymosa.__file__)
     with open(os.path.join(pymosa_path, 'm26_configuration.yaml'), 'r') as f:
-        config = yaml.load(f)
+        config = yaml.safe_load(f)
 
     # Set config from arguments
     if args.filename is not None:
