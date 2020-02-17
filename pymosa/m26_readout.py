@@ -1,7 +1,6 @@
 import logging
 import datetime
 from time import sleep, time, mktime
-from itertools import izip
 from threading import Thread, Event, Lock, Condition
 from collections import deque, Iterable
 import sys
@@ -11,6 +10,12 @@ import numpy as np
 from basil.HL import sitcp_fifo
 
 data_iterable = ("data", "timestamp_start", "timestamp_stop", "error")
+
+# Python 2/3 compability
+try:
+    basestring  # noqa
+except NameError:
+    basestring = str  # noqa
 
 
 def get_float_time():
@@ -206,7 +211,7 @@ class M26Readout(object):
                     thread.join(timeout=timeout)
                     if thread.is_alive():
                         raise StopTimeout('Stopping %s readout thread timed out after %0.1fs' % (fifo, timeout))
-                except StopTimeout, e:
+                except StopTimeout as e:
                     self.force_stop[fifo].set()
                     if self.errback:
                         self.errback(sys.exc_info())
@@ -329,7 +334,7 @@ class M26Readout(object):
                 if data_tuple is None:  # if None then exit
                     break
                 else:
-                    for index, (filter_func, converter_func, fifo_select) in enumerate(izip(self.filter_func, self.converter_func, self.fifo_select)):
+                    for index, (filter_func, converter_func, fifo_select) in enumerate(zip(self.filter_func, self.converter_func, self.fifo_select)):
                         if fifo_select is None or fifo_select == fifo:
                             # filter and do the conversion
                             converted_data_tuple = convert_data_iterable((data_tuple,), filter_func=filter_func, converter_func=converter_func)[0]
@@ -359,7 +364,7 @@ class M26Readout(object):
         while True:
             try:
                 if no_data_timeout:
-                    for m26_id, time_last_data_m26 in time_last_data.iteritems():
+                    for m26_id, time_last_data_m26 in time_last_data.items():
                         if time_last_data_m26 + no_data_timeout < time():
                             raise NoDataTimeout('Received no data for %0.1f second(s) from Mimosa26 plane with ID %d' % (no_data_timeout, m26_id))
                     if time_last_data_all + no_data_timeout < time():
