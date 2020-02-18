@@ -23,6 +23,7 @@ from m26_readout import M26Readout
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+FORMAT = '%(asctime)s [%(name)-17s] - %(levelname)-7s %(message)s'
 
 
 class m26(object):
@@ -261,6 +262,7 @@ class m26(object):
         # set up logger
         self.fh = logging.FileHandler(self.run_filename + '.log')
         self.fh.setLevel(logging.DEBUG)
+        self.fh.setFormatter(logging.Formatter(FORMAT))
         self.logger = logging.getLogger()
         self.logger.addHandler(self.fh)
 
