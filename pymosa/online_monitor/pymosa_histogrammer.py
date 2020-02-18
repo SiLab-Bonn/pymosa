@@ -27,11 +27,6 @@ def create_event_status_hist(hist, hits):
                 hist[plane][i] += 1
 
 
-def apply_noisy_pixel_cut(hists, noisy_threshold):
-    for plane in range(6):
-        hists[plane] = hists[plane][hists[plane] < noisy_threshold]
-
-
 class PymosaMimosa26Histogrammer(Transceiver):
 
     def setup_transceiver(self):
@@ -101,6 +96,7 @@ class PymosaMimosa26Histogrammer(Transceiver):
         create_occupancy_hist(self.occupancy_arrays, hits)
         create_event_status_hist(self.event_status_hist, hits)
 
+        # Mask Noisy pixels
         if self.mask_noisy_pixel:
             for plane in range(6):
                 self.occupancy_arrays[plane, self.occupancy_arrays[plane, :, :] > self.config['noisy_threshold']] = 0
