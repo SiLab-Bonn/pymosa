@@ -4,7 +4,7 @@ from time import time, sleep
 
 import yaml
 import numpy as np
-import progressbar
+from tqdm import tqdm
 from matplotlib.backends.backend_pdf import PdfPages
 
 from basil.utils.BitLogic import BitLogic
@@ -25,22 +25,21 @@ class NoiseOccScan(m26):
         m26_rx_names = [rx.name for rx in self.dut.get_modules('m26_rx')]
         logging.info('Mimosa26 RX channel:     %s', " | ".join([name.rjust(3) for name in m26_rx_names]))
         for i, region in enumerate(['A', 'B', 'C', 'D']):
-            logging.info('Fake hit rate %s:         %s', region, " | ".join([format(count, '.1e').rjust(max(3, len(m26_rx_names[index]))) for index, count in enumerate(self.fake_hit_rate_meas[:, i])]))
-        logging.info('Noise occupancy:         %s', " | ".join([repr(count).rjust(max(3, len(m26_rx_names[index]))) for index, count in enumerate(self.hit_occ_map[:, :, :].sum(axis=(0, 1)))]))
+            logging.info('Fake hit rate %s:         %s', region, " | ".join([format(count, '.1e').rjust(max(3, len(m26_rx_names[index]))) for index, count in enumerate(self.fake_hit_rate_meas[:len(m26_rx_names), i])]))
+        logging.info('Noise occupancy:         %s', " | ".join([repr(count).rjust(max(3, len(m26_rx_names[index]))) for index, count in enumerate(self.hit_occ_map[:, :, :len(m26_rx_names)].sum(axis=(0, 1)))]))
 
     def take_data(self, update_rate=1):
         with self.readout():
-            start = time()
             logging.info('Taking data...')
-            self.progressbar = progressbar.ProgressBar(widgets=['', progressbar.Percentage(), ' ', progressbar.Bar(marker='*', left='|', right='|'), ' ', progressbar.Timer()], maxval=self.scan_timeout, poll=10, term_width=80).start()
-            for _ in range(self.scan_timeout / update_rate):
+            self.pbar = tqdm(total=self.scan_timeout, ncols=80)
+            for _ in range(int(self.scan_timeout / update_rate)):
                 sleep(update_rate)
                 try:
-                    self.progressbar.update(time() - start)
+                    self.pbar.update(update_rate)
                 except ValueError:
                         pass
 
-            self.progressbar.finish()
+            self.pbar.close()
 
         # Get hit occupancy for every plane using fast online analysis
         hit_occ_map = self.hist_occ.get()
@@ -94,7 +93,7 @@ class NoiseOccScan(m26):
 
     def analyze(self):
         output_file = self.run_filename + '_interpreted.pdf'
-        logging.info('Plotting results into %s' % output_file)
+        logging.info('Plotting results into {0}'.format(output_file))
         with PdfPages(output_file) as output_pdf:
             for plane in range(6):
                 plotting.plot_occupancy(hist=np.ma.masked_where(self.hit_occ_map[:, :, plane] == 0, self.hit_occ_map[:, :, plane]),
@@ -114,7 +113,7 @@ if __name__ == "__main__":
             pymosa_version = "(local)"
 
     import argparse
-    parser = argparse.ArgumentParser(description='Tune TLU for pymosa %s\nExample: python tune_tlu.py' % pymosa_version, formatter_class=argparse.RawTextHelpFormatter)
+    parser = argparse.ArgumentParser(description='Noise occupancy scan for pymosa %s\nExample: python noise_occupancy_scan.py' % pymosa_version, formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('-t', '--scan_timeout', type=int, metavar='<scan timeout>', action='store', help='Scan timeout, time in which noise occupancy is integrated, in seconds')
     args = parser.parse_args()
 
