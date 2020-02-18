@@ -134,7 +134,7 @@ class PymosaMimosa26(Receiver):
                 if scale_state == 0:
                     plot.getAxis('bottom').setScale(1.0)
                     plot.getAxis('left').setScale(1.0)
-                    plot.getAxis('bottom').setLabel('Columns %i' % self.occ.sum())
+                    plot.getAxis('bottom').setLabel('Columns')
                     plot.getAxis('left').setLabel('Rows')
                 elif scale_state == 2:
                     plot.getAxis('bottom').setScale(18.4)
