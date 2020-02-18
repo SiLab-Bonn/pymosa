@@ -4,7 +4,7 @@ from time import time, sleep
 
 import yaml
 import numpy as np
-import progressbar
+from tqdm import tqdm
 from matplotlib.backends.backend_pdf import PdfPages
 
 from basil.utils.BitLogic import BitLogic
@@ -25,7 +25,7 @@ class NoiseOccTuning(m26):
     def store_configuration(self, config_file=None):
         if config_file is None:
             config_file = './m26_config/m26_noise_tuning.yaml'
-        logging.info('Dumping configuration to %s', config_file)
+        logging.info('Dumping configuration to {0:s}'.format(config_file))
         with open(config_file, mode='w') as f:
             yaml.dump(self.dut.get_configuration(), f)
 
@@ -33,10 +33,10 @@ class NoiseOccTuning(m26):
         m26_rx_names = [rx.name for rx in self.dut.get_modules('m26_rx')]
         logging.info('Mimosa26 RX channel:     %s', " | ".join([name.rjust(3) for name in m26_rx_names]))
         for i, region in enumerate(['A', 'B', 'C', 'D']):
-            logging.info('Threshold setting %s:     %s', region, " | ".join([repr(count).rjust(max(3, len(m26_rx_names[index]))) for index, count in enumerate(self.thr[:, i])]))
+            logging.info('Threshold setting %s:     %s', region, " | ".join([repr(count).rjust(max(3, len(m26_rx_names[index]))) for index, count in enumerate(self.thr[:len(m26_rx_names), i])]))
         for i, region in enumerate(['A', 'B', 'C', 'D']):
-            logging.info('Fake hit rate %s:         %s', region, " | ".join([format(count, '.1e').rjust(max(3, len(m26_rx_names[index]))) for index, count in enumerate(self.fake_hit_rate_meas[:, i])]))
-        logging.info('Noise occupancy:         %s', " | ".join([repr(count).rjust(max(3, len(m26_rx_names[index]))) for index, count in enumerate(self.hit_occ_map[:, :, :].sum(axis=(0, 1)))]))
+            logging.info('Fake hit rate %s:         %s', region, " | ".join([format(count, '.1e').rjust(max(3, len(m26_rx_names[index]))) for index, count in enumerate(self.fake_hit_rate_meas[:len(m26_rx_names), i])]))
+        logging.info('Noise occupancy:         %s', " | ".join([repr(count).rjust(max(3, len(m26_rx_names[index]))) for index, count in enumerate(self.hit_occ_map[:, :, :len(m26_rx_names)].sum(axis=(0, 1)))]))
 
     def set_threshold(self, thr_a=None, thr_b=None, thr_c=None, thr_d=None, thr_global=None):
         '''
@@ -50,24 +50,24 @@ class NoiseOccTuning(m26):
         '''
         self.dut['JTAG'].reset()
         # Convert binary string to array in order to modify it
-        bias_dac_all = np.array(map(int, self.dut['BIAS_DAC_ALL'][:]))
+        bias_dac_all = np.array(list(map(int, self.dut['BIAS_DAC_ALL'][:])))
         # Set local thresholds A - D. MSB: plane 6, LSB: plane 1
         if thr_a is not None:
             for i, thr in enumerate(thr_a):
-                bias_dac_all[(5 - i) * 152 + 104:(5 - i) * 152 + 112] = np.array(map(int, format(thr, '008b')[::-1]))
+                bias_dac_all[(5 - i) * 152 + 104:(5 - i) * 152 + 112] = np.array(list(map(int, format(thr, '008b')[::-1])))
         if thr_b is not None:
             for i, thr in enumerate(thr_b):
-                bias_dac_all[(5 - i) * 152 + 96:(5 - i) * 152 + 104] = np.array(map(int, format(thr, '008b')[::-1]))
+                bias_dac_all[(5 - i) * 152 + 96:(5 - i) * 152 + 104] = np.array(list(map(int, format(thr, '008b')[::-1])))
         if thr_c is not None:
             for i, thr in enumerate(thr_c):
-                bias_dac_all[(5 - i) * 152 + 88:(5 - i) * 152 + 96] = np.array(map(int, format(thr, '008b')[::-1]))
+                bias_dac_all[(5 - i) * 152 + 88:(5 - i) * 152 + 96] = np.array(list(map(int, format(thr, '008b')[::-1])))
         if thr_d is not None:
             for i, thr in enumerate(thr_d):
-                bias_dac_all[(5 - i) * 152 + 80:(5 - i) * 152 + 88] = np.array(map(int, format(thr, '008b')[::-1]))
+                bias_dac_all[(5 - i) * 152 + 80:(5 - i) * 152 + 88] = np.array(list(map(int, format(thr, '008b')[::-1])))
         # Set global threshold
         if thr_global is not None:
             for i, thr in enumerate(thr_global):
-                bias_dac_all[(5 - i) * 152 + 112:(5 - i) * 152 + 120] = np.array(map(int, format(thr, '008b')[::-1]))
+                bias_dac_all[(5 - i) * 152 + 112:(5 - i) * 152 + 120] = np.array(list(map(int, format(thr, '008b')[::-1])))
 
         # Set configuration
         self.dut['BIAS_DAC_ALL'][:] = ''.join(map(str, bias_dac_all[::-1]))
@@ -92,17 +92,16 @@ class NoiseOccTuning(m26):
 
     def take_data(self, update_rate=1):
         with self.readout():
-            start = time()
             logging.info('Taking data...')
-            self.progressbar = progressbar.ProgressBar(widgets=['', progressbar.Percentage(), ' ', progressbar.Bar(marker='*', left='|', right='|'), ' ', progressbar.Timer()], maxval=self.scan_timeout, poll=10, term_width=80).start()
-            for _ in range(self.scan_timeout / update_rate):
+            self.pbar = tqdm(total=self.scan_timeout, ncols=80)
+            for _ in range(int(self.scan_timeout / update_rate)):
                 sleep(update_rate)
                 try:
-                    self.progressbar.update(time() - start)
+                    self.pbar.update(update_rate)
                 except ValueError:
                         pass
 
-            self.progressbar.finish()
+            self.pbar.close()
 
         # Get hit occupancy for every plane using fast online analysis
         hit_occ_map = self.hist_occ.get()
@@ -142,14 +141,15 @@ class NoiseOccTuning(m26):
                 self.hist_occ.add(raw_data=data[0])
 
     def scan(self):
-        logging.info('Allowed fake hit rate ( per pixel / 115.2 us): %.1e', self.fake_hit_rate)
+        logging.info('Allowed fake hit rate (per pixel / 115.2 us): {0:.1e}'.format(self.fake_hit_rate))
+        logging.info('Starting from threshold setting {0} in steps of {1}'.format(self.thr_start, self.thr_step))
 
         # Define columns which belong to regions A, B, C, D
         m26_regions = [(0, 288), (288, 576), (576, 864), (864, 1151)]
 
         # Find lowest threshold setting until max fake hit rate is reached.
         proceed = np.ones(shape=(6, 4), dtype=np.bool)  # Indicator if fake hit rate is reached (6 planes, 4 regions)
-        self.fake_hit_rate_meas = np.zeros(shape=proceed.shape)
+        self.fake_hit_rate_meas = np.full(shape=proceed.shape, fill_value=np.nan)
         thr_start = np.full(shape=proceed.shape, fill_value=self.thr_start)
         self.thr = thr_start
         init = True
@@ -162,7 +162,8 @@ class NoiseOccTuning(m26):
 
             # Calculate fake hit rate
             for region in range(4):
-                self.fake_hit_rate_meas[:, region] = self.hit_occ_map[slice(m26_regions[region][0], m26_regions[region][1]), :, :].sum(axis=(0, 1)) / 576. / 288. / self.scan_timeout / 1e6 * 115.2
+                occs = self.hit_occ_map[slice(m26_regions[region][0], m26_regions[region][1]), :, :].sum(axis=(0, 1))
+                self.fake_hit_rate_meas[np.nonzero(occs), region] = occs[np.nonzero(occs)] / 576. / 288. / self.scan_timeout / 1e6 * 115.2
 
             # Log status (fake hit rate, noise occupoancy, threshold setting)
             self.print_log_status()
@@ -170,7 +171,7 @@ class NoiseOccTuning(m26):
             for plane in range(6):
                 for region in range(4):
                     if proceed[plane, region]:
-                        if self.fake_hit_rate_meas[plane, region] < self.fake_hit_rate:
+                        if (self.fake_hit_rate_meas[plane, region] < self.fake_hit_rate):# or np.isnan(self.fake_hit_rate_meas[plane, region]):
                             self.thr[plane, region] -= self.thr_step
                         else:
                             if self.thr[plane, region] + self.thr_step <= 255:
@@ -187,7 +188,7 @@ class NoiseOccTuning(m26):
                 self.fake_hit_rate_meas_all = np.concatenate([self.fake_hit_rate_meas_all, self.fake_hit_rate_meas[np.newaxis, :, :]], axis=0)
 
         for plane in range(6):
-            logging.info('Fake hit rate limit is reached. Final thresholds are %s', [val for val in self.thr[plane, :]])
+            logging.info('Fake hit rate limit is reached. Final thresholds are {0:s}'.format([val for val in self.thr[plane, :]]))
 
         self.hist_occ.stop.set()  # stop analysis process
 
@@ -196,7 +197,7 @@ class NoiseOccTuning(m26):
 
     def analyze(self):
         output_file = self.run_filename + '_interpreted.pdf'
-        logging.info('Plotting results into %s' % output_file)
+        logging.info('Plotting results into {0:s}'.format(output_file))
         with PdfPages(output_file) as output_pdf:
             plotting.plot_noise_tuning_result(fake_hit_rate=self.fake_hit_rate_meas_all,
                                               fake_hit_rate_spec=self.fake_hit_rate,
