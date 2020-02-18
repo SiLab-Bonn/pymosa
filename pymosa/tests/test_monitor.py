@@ -41,7 +41,7 @@ def create_config_yaml():
                                       'frontend': 'tcp://127.0.0.1:8700',
                                       'backend': 'tcp://127.0.0.1:8800'
                                       }
-    devices['HIT_Correlator'] = {'kind': 'pymosa_hit_correlator_conv',
+    devices['HIT_Correlator'] = {'kind': 'hit_correlator_converter',
                                  'frontend': 'tcp://127.0.0.1:8700',
                                  'backend': 'tcp://127.0.0.1:8900',
                                  'correlation_planes': [{'name' : 'Mimosa26 Plane 1', 'dut_type' : 'M26', 'address' : 'tcp://127.0.0.1:8700', 'id' : 0},
@@ -54,7 +54,7 @@ def create_config_yaml():
     devices['PYMOSA_Receiver'] = {'kind': 'pymosa_receiver',
                                   'frontend': 'tcp://127.0.0.1:8800'
                                   }
-    devices['HIT_Correlator'] = {'kind': 'pymosa_hit_correlator_recv',
+    devices['HIT_Correlator'] = {'kind': 'hit_correlator_receiver',
                                  'frontend': 'tcp://127.0.0.1:8900',
                                  'correlation_planes': [{'name' : 'Mimosa26 Plane 1', 'dut_type' : 'M26'},
                                                         {'name' : 'Mimosa26 Plane 2', 'dut_type' : 'M26'}]

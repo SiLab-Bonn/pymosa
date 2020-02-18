@@ -199,7 +199,9 @@ class HitCorrelator(Receiver):
             for key in data:
                 if 'column' == key:
                     self.occupancy_images_columns.setImage(data[key][:, :], autoDownsample=True)
+                    self.plot1.setTitle('Column Correlation, Sum: %i' % data[key][:, :].sum())
                 if 'row' == key:
                     self.occupancy_images_rows.setImage(data[key][:, :], autoDownsample=True)
+                    self.plot2.setTitle('Row Correlation, Sum: %i' % data[key][:, :].sum())
         else:
             self.rate_label.setText('Readout Rate: %d Hz' % data['meta_data']['fps'])
