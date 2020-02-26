@@ -171,7 +171,7 @@ class NoiseOccTuning(m26):
             for plane in range(6):
                 for region in range(4):
                     if proceed[plane, region]:
-                        if (self.fake_hit_rate_meas[plane, region] < self.fake_hit_rate):# or np.isnan(self.fake_hit_rate_meas[plane, region]):
+                        if (self.fake_hit_rate_meas[plane, region] < self.fake_hit_rate) or np.isnan(self.fake_hit_rate_meas[plane, region]):
                             self.thr[plane, region] -= self.thr_step
                         else:
                             if self.thr[plane, region] + self.thr_step <= 255:
