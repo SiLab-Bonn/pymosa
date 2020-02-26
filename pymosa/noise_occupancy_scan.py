@@ -118,7 +118,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     with open('./m26_configuration.yaml', 'r') as f:
-        config = yaml.load(f)
+        config = yaml.safe_load(f)
 
     if args.scan_timeout is not None:
         config["scan_timeout"] = range(args.scan_timeout)
