@@ -96,7 +96,7 @@ class NoiseOccScan(m26):
         logging.info('Plotting results into {0}'.format(output_file))
         with PdfPages(output_file) as output_pdf:
             for plane in range(6):
-                plotting.plot_occupancy(hist=np.ma.masked_where(self.hit_occ_map[:, :, plane] == 0, self.hit_occ_map[:, :, plane]),
+                plotting.plot_occupancy(hist=np.ma.masked_where(self.hit_occ_map[:, :, plane] == 0, self.hit_occ_map[:, :, plane]).T,
                                         title='Occupancy for plane %i' % plane,
                                         output_pdf=output_pdf)
 
