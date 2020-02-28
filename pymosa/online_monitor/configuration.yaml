@@ -1,15 +1,9 @@
-producer_sim :
-    PYMOSA_Producer :
-        backend : tcp://127.0.0.1:8500
-        delay : 0.1
-        kind : pymosa_producer_sim
-        data_file: /home/silab/git/pymosa_tb/pymosa/online_monitor/20180505-213022_M26_TELESCOPE.h5
-        # data_file: /home/silab/Desktop/20190412-133104_M26_TELESCOPE.h5
-#    Pybar_Producer :
-#        backend : tcp://127.0.0.1:9600
+# producer_sim :
+#    PYMOSA_Producer :
+#        backend : tcp://127.0.0.1:8500
 #        delay : 0.1
-#        kind : pybar_fei4
-#        data_file: /home/silab/Desktop/116_fei4_tel_mod2_ext_trigger_scan.h5  # From ITK MAY TB
+#        kind : pymosa_producer_sim
+#        data_file: /home/silab/git/pymosa/data/telescope_data.h5
 
 converter :
     PYMOSA_Interpreter :
@@ -52,11 +46,10 @@ converter :
               dut_type : M26
               address : tcp://127.0.0.1:8700
               id : 3  
-            - name : FE-I4 plane
-              dut_type : FE-I4
-              address : tcp://127.0.0.1:9700
-              id : 0  
-          
+#            - name : FE-I4 plane
+#              dut_type : FE-I4
+#              address : tcp://127.0.0.1:9700
+#              id : 0
 
 receiver :
     PYMOSA_Receiver :
@@ -77,5 +70,5 @@ receiver :
               dut_type : M26
             - name : Mimosa26 Plane 4
               dut_type : M26
-            - name : FE-I4 plane
-              dut_type : FE-I4
+#            - name : FE-I4 plane
+#              dut_type : FE-I4
