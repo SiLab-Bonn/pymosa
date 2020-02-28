@@ -11,15 +11,6 @@ from pyqtgraph.dockarea import DockArea, Dock
 
 from online_monitor.utils import utils
 
-# TRIGGER_NUMBER_ERROR = 0x00000001  # Trigger number has not increased by one
-# NO_TRIGGER_WORD_ERROR = 0x00000002  # Event has no trigger word associated
-# TRIGGER_TIMESTAMP_OVERFLOW = 0x00000004  # Indicating the overflow of the trigger timestamp
-# TRIGGER_NUMBER_OVERFLOW = 0x00000008  # Indicating the overflow of the trigger number
-# DATA_ERROR = 0x00000010  # Indicating any occurrence of data errors in the Momosa26 protocol (e.g., invalid column/row, invalid data length, data loss)
-# TIMESTAMP_OVERFLOW = 0x00000020  # Indicating the overflow of the Mimosa26 timestamp
-# FRAME_ID_OVERFLOW = 0x00000040  # Indicating the overflow of the Mimosa26 frame ID
-# OVERFLOW_FLAG = 0x00000080  # Indicating the occurrence of the overflow flag for a particular Mimosa26 row
-
 
 class PymosaMimosa26(Receiver):
 
@@ -170,8 +161,6 @@ class PymosaMimosa26(Receiver):
                 self.occ_hist_sum[plane] = data['occupancies'][plane].sum()
                 self.event_status_plots[plane].setData(x=np.linspace(-0.5, 31.5, 33), y=data['event_status'][plane], stepMode=True, fillLevel=0, brush=(0, 0, 255, 150))
                 plot.setTitle('Occupancy Map, Sum: %i' % self.occ_hist_sum[plane])
-#                 if np.any(data['event_status'][plane] != 0):  # Avoid crash if all counts are zero.
-#                     self.event_status_widgets[plane].setLogMode(y=True)  # LogMode, deletes stepMode setting.
         else:
             update_rate(data['meta_data']['fps'], data['meta_data']['hps'], data['meta_data']['total_hits'], data['meta_data']['eps'], data['meta_data']['total_events'])
             self.timestamp_label.setText("Data Timestamp\n%s" % time.asctime(time.localtime(data['meta_data']['timestamp_stop'])))
