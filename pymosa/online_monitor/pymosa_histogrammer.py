@@ -14,7 +14,7 @@ def create_occupancy_hist(hist, hits):
         col = hits[hit_index]['column']
         row = hits[hit_index]['row']
         plane_id = hits[hit_index]['plane']
-        hist[plane_id, col, row] += 1
+        hist[plane_id - 1, col, row] += 1
 
 
 @njit
@@ -24,7 +24,7 @@ def create_event_status_hist(hist, hits):
         plane = hits[hit_index]['plane']
         for i in range(32):
             if event_status & (1 << i):
-                hist[plane][i] += 1
+                hist[plane - 1][i] += 1
 
 
 class PymosaMimosa26Histogrammer(Transceiver):
