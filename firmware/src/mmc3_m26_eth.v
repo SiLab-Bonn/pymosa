@@ -628,7 +628,7 @@ generate
             .HIGHADDR(M26_RX_HIGHADDR + ch*16),
             .ABUSWIDTH(32),
             .HEADER(8'h20),
-            .IDENTYFIER(ch+1)
+            .IDENTIFIER(ch+1)
         ) i_m26_rx (
             .CLK_RX(M26_CLK_BUFG[ch]),
             .MKD_RX(M26_MKD[ch]),
