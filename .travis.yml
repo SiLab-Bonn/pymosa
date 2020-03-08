@@ -20,11 +20,11 @@ install:
   - export PATH="$HOME/miniconda/bin:$PATH"
   - conda update --yes conda
   - conda info -a
-  - conda create --yes -n test-environment python="$TRAVIS_PYTHON_VERSION" bitarray numpy pytables pyyaml tqdm nose qtpy pyqt
+  - conda create --yes -n test-environment python="$TRAVIS_PYTHON_VERSION" bitarray numpy pyqt pytables pyyaml qtpy tqdm nose 
   - source activate test-environment
   - pip install xvfbwrapper  # fake x server for Qt gui tests
   # Install basil
-  - pip install 'basil-daq>=3.0.0,<3.0.4'
+  - pip install 'basil-daq>=3.0.0,<4.0.0'
   # Install pybar_mimosa26_interpreter
   - pip install git+https://github.com/SiLab-Bonn/pyBAR_mimosa26_interpreter@master
   - pip install -e .
