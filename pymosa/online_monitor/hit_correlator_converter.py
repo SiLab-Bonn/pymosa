@@ -1,12 +1,12 @@
+import os
+import yaml
+import gc
+import numpy as np
 from numba import njit
 
 from zmq.utils import jsonapi
-import numpy as np
-import gc
-import os
 from online_monitor.converter.transceiver import Transceiver
 from online_monitor.utils import utils
-import yaml
 
 
 @njit
@@ -61,8 +61,8 @@ def correlate_position_on_event_number(ref_event_numbers, dut_event_numbers, ref
                 y_index_dut = dut_y_indices[curr_dut_index]
 
                 # Add correlation to histogram
-                x_corr_histo[x_index_dut, x_index_ref] += 1
-                y_corr_histo[y_index_dut, y_index_ref] += 1
+                x_corr_histo[x_index_ref, x_index_dut] += 1
+                y_corr_histo[y_index_ref, y_index_dut] += 1
             else:
                 break
 
@@ -82,14 +82,19 @@ class HitCorrelator(Transceiver):
         self.remove_background = False  # Remove noisy background
         self.remove_background_checkbox = 0
         self.remove_background_percentage = 99.0
-        self.transpose = False  # If True transpose column and row
+        self.transpose = False  # If True transpose column and row of reference DUT (first DUT)
         self.transpose_checkbox = 0
         # Data buffer and correlation histogramms
-        self.hit_data = {}  # Dict which contains separated data
-        self.data_buffer = {}  # Data buffer dictionary which contains the data of the DUTs which should be correlated
-        self.x_corr_hist = 0  # Correlation histogram
-        self.y_corr_hist = 0  # Correlation histogram
-        self.iter = 0
+        self.max_buffer_size = 1000000
+        self.data_buffer_dtype = np.dtype([('event_number', np.uint64),
+                                           ('column', np.uint16),
+                                           ('row', np.uint16)])
+        self.corr_data_buffer = [np.zeros(shape=(self.max_buffer_size,), dtype=self.data_buffer_dtype),
+                                 np.zeros(shape=(self.max_buffer_size,), dtype=self.data_buffer_dtype)]  # Correlation data buffer. Contains events of DUTs which should be correlated.
+        self.corr_data_buffer_index = [0, 0]  # fill index of correlation data buffer
+        self.column_corr_hist = 0  # Correlation histogram for columns
+        self.row_corr_hist = 0  # Correlation histogram for rows
+        self.corr_data_buffer_filled = False  # Flag indicating if correlation data buffer is filled.
 
         # Load correlation DUT types
         config = os.path.join(os.path.dirname(__file__), 'correlation_duts.yaml')
@@ -133,61 +138,72 @@ class HitCorrelator(Transceiver):
             if actual_dut_data[1]['hits'].shape[0] == 0:  # empty array is skipped
                 continue
 
-            # Separate hits by identifier
+            # Separate hits by identifier and fill correlation buffers.
             for i, device in enumerate(self.config['correlation_planes']):
-                # Check if tcp address of incoming data matches with specified tcp address
+                # Check if tcp address of incoming data matches with specified tcp address.
                 if actual_dut_data[0] == device['address']:
-                    # If more than one plane from the same address an additional field 'id' is used in order to separate data of same address
+                    # If more than one plane from the same address, use additional field 'id' to separate data of same address.
                     if 'id' in device:
                         sel = (actual_dut_data[1]['hits']['plane'] == device['id'] + 1)
                         actual_dut_hit_data = actual_dut_data[1]['hits'][sel]
                     else:
                         actual_dut_hit_data = actual_dut_data[1]['hits']
-                    # Apppend to dict
-                    if i in self.hit_data.keys():
-                        self.hit_data[i] = np.append(self.hit_data[i], actual_dut_hit_data)
-                    else:
-                        self.hit_data[i] = actual_dut_hit_data
+                    # Append only hit data for duts which need to be correlated to correlation buffer.
+                    if i in self.active_duts:
+                        dut_index = self.active_duts.index(i)
+                        actual_buffer_index = self.corr_data_buffer_index[dut_index]
+                        actual_dut_correlation_data = actual_dut_hit_data[['event_number', 'column', 'row']]
+                        # Check if correlation data can still be filled into buffer. If not replace oldest events.
+                        if actual_buffer_index + actual_dut_correlation_data.shape[0] > self.corr_data_buffer[dut_index].shape[0] - 1:
+                            # Calculate size upto which buffer can be filled. Other data is stored at beginning of buffer.
+                            max_data_buffer_index = self.corr_data_buffer[dut_index].shape[0] - actual_buffer_index
+                            self.corr_data_buffer[dut_index][actual_buffer_index:] = actual_dut_correlation_data[:max_data_buffer_index]
+                            self.corr_data_buffer[dut_index][:actual_dut_correlation_data.shape[0] - max_data_buffer_index] = actual_dut_correlation_data[max_data_buffer_index:]
+                            self.corr_data_buffer_index[dut_index] = actual_dut_correlation_data.shape[0] - max_data_buffer_index
+                            self.corr_data_buffer_filled = True
+                        else:  # Enough space left in buffer. Fill buffer with actual data.
+                            self.corr_data_buffer[dut_index][actual_buffer_index:actual_buffer_index + actual_dut_correlation_data.shape[0]] = actual_dut_correlation_data
+                            self.corr_data_buffer_index[dut_index] += actual_dut_correlation_data.shape[0]
 
-        # Copy hits to buffer
-        for i, active_dut in enumerate(self.active_duts):
-            try:
-                if i in self.data_buffer.keys():
-                    self.data_buffer[i] = np.append(self.data_buffer[i], self.hit_data[active_dut])
-                else:
-                    self.data_buffer[i] = self.hit_data[active_dut]
-            except KeyError:
-                return
+        if self.corr_data_buffer_filled:
+            ref_event_numbers = self.corr_data_buffer[0]['event_number']
+            dut_event_numbers = self.corr_data_buffer[1]['event_number']
+            ref_x_indices = self.corr_data_buffer[0]['column']
+            ref_y_indices = self.corr_data_buffer[0]['row']
+            dut_x_indices = self.corr_data_buffer[1]['column']
+            dut_y_indices = self.corr_data_buffer[1]['row']
+        else:
+            ref_event_numbers = self.corr_data_buffer[0]['event_number'][:self.corr_data_buffer_index[0]]
+            dut_event_numbers = self.corr_data_buffer[1]['event_number'][:self.corr_data_buffer_index[1]]
+            ref_x_indices = self.corr_data_buffer[0]['column'][:self.corr_data_buffer_index[0]]
+            ref_y_indices = self.corr_data_buffer[0]['row'][:self.corr_data_buffer_index[0]]
+            dut_x_indices = self.corr_data_buffer[1]['column'][:self.corr_data_buffer_index[1]]
+            dut_y_indices = self.corr_data_buffer[1]['row'][:self.corr_data_buffer_index[1]]
 
-        # In order to correlate data, data from two planes have to be selected (via GUI)
-        if len(self.data_buffer) != 2:
+        # Check if buffers are not empty
+        if self.corr_data_buffer_index[0] == 0 or self.corr_data_buffer_index[1] == 0:
             return
 
-        # Check if datas are not empty
-        elif len(self.data_buffer[0]) == 0 or len(self.data_buffer[1]) == 0:
-            return
+        # Main correlation function
+        correlate_position_on_event_number(ref_event_numbers=ref_event_numbers,
+                                           dut_event_numbers=dut_event_numbers,
+                                           ref_x_indices=ref_x_indices,
+                                           ref_y_indices=ref_y_indices,
+                                           dut_x_indices=dut_x_indices,
+                                           dut_y_indices=dut_y_indices,
+                                           x_corr_histo=self.column_corr_hist,
+                                           y_corr_histo=self.row_corr_hist,
+                                           transpose=self.transpose)
 
         # Remove background function in order to exclude noisy pixels
         def remove_background(cols_corr, rows_corr, percentage):
             cols_corr[cols_corr < np.percentile(cols_corr, percentage)] = 0
             rows_corr[rows_corr < np.percentile(rows_corr, percentage)] = 0
 
-        # Main correlation function
-        correlate_position_on_event_number(ref_event_numbers=self.data_buffer[0]['event_number'],
-                                           dut_event_numbers=self.data_buffer[1]['event_number'],
-                                           ref_x_indices=self.data_buffer[0]['row'],
-                                           ref_y_indices=self.data_buffer[0]['column'],
-                                           dut_x_indices=self.data_buffer[1]['row'],
-                                           dut_y_indices=self.data_buffer[1]['column'],
-                                           x_corr_histo=self.x_corr_hist,
-                                           y_corr_histo=self.y_corr_hist,
-                                           transpose=self.transpose)
-        self.iter += 1
-
         if self.remove_background:
-            remove_background(self.hist_cols_corr, self.hist_rows_corr, self.remove_background_percentage)
+            remove_background(self.column_corr_hist, self.row_corr_hist, self.remove_background_percentage)
 
-        return [{'column': self.x_corr_hist, 'row': self.y_corr_hist}]
+        return [{'column': self.column_corr_hist, 'row': self.row_corr_hist}]
 
     def serialize_data(self, data):
         return jsonapi.dumps(data, cls=utils.NumpyEncoder)
@@ -195,23 +211,26 @@ class HitCorrelator(Transceiver):
     def handle_command(self, command):
         # Reset histogramms and data buffer, call garbage collector
         def reset():
-            self.x_corr_hist = np.zeros_like(self.x_corr_hist)
-            self.y_corr_hist = np.zeros_like(self.y_corr_hist)
-            self.data_buffer = {}
+            self.column_corr_hist = np.zeros_like(self.column_corr_hist)
+            self.row_corr_hist = np.zeros_like(self.row_corr_hist)
+            self.corr_data_buffer = [np.zeros(shape=(self.max_buffer_size,), dtype=self.data_buffer_dtype),
+                                     np.zeros(shape=(self.max_buffer_size,), dtype=self.data_buffer_dtype)]
+            self.corr_data_buffer_index = [0, 0]
+            self.corr_data_buffer_filled = False
             gc.collect()  # garbage collector is called to free unused memory
 
         # Determine the needed histogramm size according to selected DUTs
-        def create_corr_hist(dut1, dut2, transpose):
-            n_cols_dut_1 = self.correlator_config[self.config['correlation_planes'][dut1]['dut_type']]['n_columns']
-            n_rows_dut_1 = self.correlator_config[self.config['correlation_planes'][dut1]['dut_type']]['n_rows']
-            n_cols_dut_2 = self.correlator_config[self.config['correlation_planes'][dut2]['dut_type']]['n_columns']
-            n_rows_dut_2 = self.correlator_config[self.config['correlation_planes'][dut2]['dut_type']]['n_rows']
+        def create_corr_hist(ref, dut, transpose):
+            n_cols_ref = self.correlator_config[self.config['correlation_planes'][ref]['dut_type']]['n_columns']
+            n_rows_ref = self.correlator_config[self.config['correlation_planes'][ref]['dut_type']]['n_rows']
+            n_cols_dut = self.correlator_config[self.config['correlation_planes'][dut]['dut_type']]['n_columns']
+            n_rows_dut = self.correlator_config[self.config['correlation_planes'][dut]['dut_type']]['n_rows']
             if transpose:
-                self.x_corr_hist = np.zeros(shape=(n_rows_dut_1, n_cols_dut_2), dtype=np.uint32)
-                self.y_corr_hist = np.zeros(shape=(n_cols_dut_1, n_rows_dut_2), dtype=np.uint32)
+                self.column_corr_hist = np.zeros(shape=(n_rows_ref, n_cols_dut), dtype=np.uint32)
+                self.row_corr_hist = np.zeros(shape=(n_cols_ref, n_rows_dut), dtype=np.uint32)
             else:
-                self.x_corr_hist = np.zeros(shape=(n_cols_dut_1, n_cols_dut_2), dtype=np.uint32)
-                self.y_corr_hist = np.zeros(shape=(n_rows_dut_1, n_rows_dut_2), dtype=np.uint32)
+                self.column_corr_hist = np.zeros(shape=(n_cols_ref, n_cols_dut), dtype=np.uint32)
+                self.row_corr_hist = np.zeros(shape=(n_rows_ref, n_rows_dut), dtype=np.uint32)
             reset()
 
         # Commands

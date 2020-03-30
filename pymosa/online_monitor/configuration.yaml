@@ -50,7 +50,6 @@ converter :
 #            - name : FE-I4 plane
 #              dut_type : FE-I4
 #              address : tcp://127.0.0.1:9700
-#              id : 0
 
 receiver :
     PYMOSA_Receiver :
