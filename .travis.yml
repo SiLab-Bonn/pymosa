@@ -33,6 +33,3 @@ install:
 
 script:
   - nosetests
-  - ls
-  - cd tests
-  - pytest -s -v
