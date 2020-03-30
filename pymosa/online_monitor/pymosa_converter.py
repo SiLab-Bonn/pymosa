@@ -10,7 +10,7 @@ from online_monitor.utils import utils
 class PymosaMimosa26(Transceiver):
 
     def setup_interpretation(self):
-        analyze_m26_header_ids = self.config['analyze_m26_header_ids']
+        analyze_m26_header_ids = self.config.get('analyze_m26_header_ids', [1, 2, 3, 4, 5, 6])
         self._raw_data_interpreter = raw_data_interpreter.RawDataInterpreter(analyze_m26_header_ids=analyze_m26_header_ids)
         self.n_hits = 0
         self.n_events = 0
