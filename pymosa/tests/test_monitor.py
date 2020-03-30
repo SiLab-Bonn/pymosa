@@ -44,8 +44,8 @@ def create_config_yaml():
     devices['HIT_Correlator'] = {'kind': 'hit_correlator_converter',
                                  'frontend': 'tcp://127.0.0.1:8700',
                                  'backend': 'tcp://127.0.0.1:8900',
-                                 'correlation_planes': [{'name' : 'Mimosa26 Plane 1', 'dut_type' : 'M26', 'address' : 'tcp://127.0.0.1:8700', 'id' : 0},
-                                                        {'name' : 'Mimosa26 Plane 2', 'dut_type' : 'M26', 'address' : 'tcp://127.0.0.1:8700', 'id' : 1}]
+                                 'correlation_planes': [{'name': 'Mimosa26 Plane 1', 'dut_type': 'M26', 'address': 'tcp://127.0.0.1:8700', 'id': 0},
+                                                        {'name': 'Mimosa26 Plane 2', 'dut_type': 'M26', 'address': 'tcp://127.0.0.1:8700', 'id': 1}]
                                  }
 
     conf['converter'] = devices
@@ -56,8 +56,8 @@ def create_config_yaml():
                                   }
     devices['HIT_Correlator'] = {'kind': 'hit_correlator_receiver',
                                  'frontend': 'tcp://127.0.0.1:8900',
-                                 'correlation_planes': [{'name' : 'Mimosa26 Plane 1', 'dut_type' : 'M26'},
-                                                        {'name' : 'Mimosa26 Plane 2', 'dut_type' : 'M26'}]
+                                 'correlation_planes': [{'name': 'Mimosa26 Plane 1', 'dut_type': 'M26'},
+                                                        {'name': 'Mimosa26 Plane 2', 'dut_type': 'M26'}]
                                  }
     conf['receiver'] = devices
     return yaml.dump(conf, default_flow_style=False)
@@ -138,7 +138,7 @@ class TestOnlineMonitor(unittest.TestCase):
                     data_recv_0.append(receiver.occupancy_images[k].getHistogram(bins=100, step=100))
 
         # Case 2: Activate DUT widget, receiver 1 should show data
-        self.online_monitor.tab_widget.setCurrentIndex(1)
+        self.online_monitor.tab_widget.setCurrentIndex(2)  # Yaml dumps dict in alphabetical order.
         self.app.processEvents()
         time.sleep(5)
         self.app.processEvents()
@@ -153,7 +153,7 @@ class TestOnlineMonitor(unittest.TestCase):
                     data_recv_1.append(receiver.occupancy_images[k].getHistogram(bins=100, step=100))
 
         # Case 3: Activate correlator tab, receiver 2 should have no data since start button not pressed
-        self.online_monitor.tab_widget.setCurrentIndex(2)
+        self.online_monitor.tab_widget.setCurrentIndex(1)  # Yaml dumps dict in alphabetical order.
         self.app.processEvents()
         time.sleep(5)
         self.app.processEvents()
@@ -164,7 +164,7 @@ class TestOnlineMonitor(unittest.TestCase):
                 data_recv_2.append(receiver.occupancy_images_rows.getHistogram(bins=100, step=100))
 
         # Case 4: Activate correlator tab, receiver 2 should show data since start button is pressed
-        self.online_monitor.tab_widget.setCurrentIndex(2)
+        self.online_monitor.tab_widget.setCurrentIndex(1)  # Yaml dumps dict in alphabetical order.
         self.app.processEvents()
         time.sleep(5)
         self.app.processEvents()
@@ -184,9 +184,9 @@ class TestOnlineMonitor(unittest.TestCase):
                 time.sleep(2)
                 receiver.send_command('START 0')  # send command in order to start correlation
                 self.app.processEvents()
-                time.sleep(5)
+                time.sleep(2)
                 self.app.processEvents()
-                time.sleep(5)
+                time.sleep(2)
                 data_recv_3.append(receiver.occupancy_images_rows.getHistogram(bins=100, step=100))
 
         self.assertListEqual(data_recv_0, [(None, None), (None, None), (None, None), (None, None), (None, None), (None, None)])
