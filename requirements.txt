@@ -9,3 +9,4 @@ qtpy
 tables
 tqdm
 numba
+matplotlib
