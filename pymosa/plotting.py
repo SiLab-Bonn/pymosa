@@ -1,5 +1,4 @@
 import numpy as np
-
 from matplotlib import colors, cm
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas

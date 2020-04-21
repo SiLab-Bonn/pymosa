@@ -38,15 +38,15 @@ Python 2.7 or Python 3 or higher must be used. There are many ways to install Py
 
 Install additional required packages:
 ```bash
-conda install bitarray numpy numba matplotlib pyqt pytables pyyaml tqdm
+conda install bitarray matplotlib numba numpy pyqt pytables pyyaml qtpy tqdm
 ```
 
-Install [Basil](https://github.com/SiLab-Bonn/basil) (>=2.4.12,<3.0.0):
+Install [Basil](https://github.com/SiLab-Bonn/basil) (>=3.0.0,<4.0.0):
 ```bash
-pip install 'basil_daq>=2.4.12,<3.0.0'
+pip install 'basil_daq>=3.0.0,<4.0.0'
 ```
 
-Install [Pymosa interpreter](https://github.com/SiLab-Bonn/pyBAR_mimosa26_interpreter):
+Install [Mimosa26 Interpreter](https://github.com/SiLab-Bonn/pyBAR_mimosa26_interpreter):
 ```bash
 pip install git+https://github.com/SiLab-Bonn/pyBAR_mimosa26_interpreter@master
 ```

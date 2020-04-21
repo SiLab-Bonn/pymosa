@@ -20,7 +20,7 @@ install:
   - export PATH="$HOME/miniconda/bin:$PATH"
   - conda update --yes conda
   - conda info -a
-  - conda create --yes -n test-environment python="$TRAVIS_PYTHON_VERSION" bitarray numpy pyqt pytables pyyaml qtpy tqdm nose 
+  - conda create --yes -n test-environment python="$TRAVIS_PYTHON_VERSION" bitarray matplotlib numba numpy pyqt pytables pyyaml qtpy tqdm nose
   - source activate test-environment
   - pip install xvfbwrapper  # fake x server for Qt gui tests
   # Install basil
