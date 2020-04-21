@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages  # This setup relies on setuptools since distutils is insufficient and badly hacked code
+import pkg_resources
 
-import pymosa
-
-version = '0.0.1'
 author = 'Ivan Caicedo, Yannick Dieter, Toko Hirono, Jens Janssen, David-Leon Pohl'
 author_email = 'caicedo@physik.uni-bonn.de, dieter@physik.uni-bonn.de, hirono@physik.uni-bonn.de, janssen@physik.uni-bonn.de, pohl@physik.uni-bonn.de'
 
@@ -42,15 +40,13 @@ setup(
 # Add the online_monitor Pymosa plugins
 try:
     import os
+    import pymosa
     from online_monitor.utils import settings
     # Get the absoulte path of this package
     package_path = os.path.dirname(pymosa.__file__)
     # Add online_monitor plugin folder to entity search paths
-    settings.add_producer_sim_path(os.path.join(package_path,
-                                                'online_monitor'))
-    settings.add_converter_path(os.path.join(package_path,
-                                             'online_monitor'))
-    settings.add_receiver_path(os.path.join(package_path,
-                                            'online_monitor'))
-except ImportError:
+    settings.add_producer_sim_path(os.path.join(package_path, 'online_monitor'))
+    settings.add_converter_path(os.path.join(package_path, 'online_monitor'))
+    settings.add_receiver_path(os.path.join(package_path, 'online_monitor'))
+except (ImportError, pkg_resources.DistributionNotFound):
     pass
