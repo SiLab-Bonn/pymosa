@@ -51,6 +51,11 @@ Install [Mimosa26 Interpreter](https://github.com/SiLab-Bonn/pyBAR_mimosa26_inte
 pip install git+https://github.com/SiLab-Bonn/pyBAR_mimosa26_interpreter@master
 ```
 
+Install [Online Monitor](https://github.com/SiLab-Bonn/online_monitor):
+```bash
+pip install git+https://github.com/SiLab-Bonn/online_monitor@development
+```
+
 Finally, install pymosa via:
 ```bash
 pip insall -e .
