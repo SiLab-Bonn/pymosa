@@ -27,6 +27,8 @@ install:
   - pip install 'basil-daq>=3.0.0,<4.0.0'
   # Install pybar_mimosa26_interpreter
   - pip install git+https://github.com/SiLab-Bonn/pyBAR_mimosa26_interpreter@master
+  # Install online_monitor
+  - pip install git+https://github.com/SiLab-Bonn/online_monitor@development
   - pip install -e .
   - conda list
   - pip list
