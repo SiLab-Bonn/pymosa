@@ -1,10 +1,11 @@
 ''' This is a producer faking data coming from Pymosa by taking real data and sending these in chunks'''
 
+import logging
 import time
+
 import numpy as np
 import tables as tb
 import zmq
-import logging
 
 from online_monitor.utils.producer_sim import ProducerSim
 

@@ -1,12 +1,13 @@
-import numpy as np
-import yaml
 import os
-from zmq.utils import jsonapi
 
+import yaml
+import numpy as np
 from PyQt5 import Qt
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtGui
 from pyqtgraph.dockarea import DockArea, Dock
+from zmq.utils import jsonapi
+
 from online_monitor.utils import utils
 from online_monitor.receiver.receiver import Receiver
 

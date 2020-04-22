@@ -1,14 +1,13 @@
-from online_monitor.receiver.receiver import Receiver
-import numpy as np
 import time
 
+import numpy as np
 from PyQt5 import Qt
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtGui
 import pyqtgraph.ptime as ptime
 from pyqtgraph.dockarea import DockArea, Dock
 
-
+from online_monitor.receiver.receiver import Receiver
 from online_monitor.utils import utils
 
 

@@ -1,10 +1,11 @@
 import os
+
 import yaml
 import gc
 import numpy as np
 from numba import njit
-
 from zmq.utils import jsonapi
+
 from online_monitor.converter.transceiver import Transceiver
 from online_monitor.utils import utils
 

@@ -1,6 +1,6 @@
 import logging
 import os
-from time import time, sleep
+from time import sleep
 
 import yaml
 import numpy as np
@@ -11,7 +11,7 @@ from basil.utils.BitLogic import BitLogic
 
 from pymosa.m26 import m26
 from pymosa import online as oa
-from m26_raw_data import open_raw_data_file, send_meta_data
+from pymosa.m26_raw_data import open_raw_data_file, send_meta_data
 from pymosa import plotting as plotting
 
 

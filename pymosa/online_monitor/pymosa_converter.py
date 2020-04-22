@@ -1,10 +1,9 @@
-from online_monitor.converter.transceiver import Transceiver
-from zmq.utils import jsonapi
 import numpy as np
+from zmq.utils import jsonapi
 
-from pyBAR_mimosa26_interpreter import raw_data_interpreter
-
+from online_monitor.converter.transceiver import Transceiver
 from online_monitor.utils import utils
+from pyBAR_mimosa26_interpreter import raw_data_interpreter
 
 
 class PymosaMimosa26(Transceiver):
