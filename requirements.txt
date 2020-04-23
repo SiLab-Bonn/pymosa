@@ -4,7 +4,7 @@ bitarray>=0.8.1
 matplotlib
 numba
 numpy
-online_monitor>=0.4,<0.5
+online_monitor>=0.4.2,<0.5
 # pyqt -> this line is intentionally commented out
 pyyaml
 qtpy

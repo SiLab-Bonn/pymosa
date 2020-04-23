@@ -24,7 +24,7 @@ setup(
     maintainer_email=author_email,
     install_requires=install_requires,
     packages=find_packages(),
-    setup_requires=['setuptools', 'online_monitor>=0.4<0.5'],
+    setup_requires=['setuptools', 'online_monitor>=0.4.2<0.5'],
     include_package_data=True,  # accept all data files and directories matched by MANIFEST.in or found in source control
     keywords=['silicon', 'detector', 'telescope', 'Mimosa26', 'EUDET'],
     platforms='any',
