@@ -1,0 +1,74 @@
+# producer_sim :
+#    PYMOSA_Producer :
+#        backend : tcp://127.0.0.1:8500
+#        delay : 0.1
+#        kind : pymosa_producer_sim
+#        data_file: /home/silab/git/pymosa/data/telescope_data.h5
+
+converter :
+    PYMOSA_Interpreter :
+        kind : pymosa_converter
+        frontend : tcp://127.0.0.1:8500
+        backend : tcp://127.0.0.1:8700
+        # analyze_m26_header_ids : [1, 2, 3, 4, 5, 6]  # Specify which M26 planes should be interpreted. Default is all planes.
+    # Pybar_Interpreter :
+    #     kind : pybar_fei4
+    #     frontend : tcp://127.0.0.1:9600
+    #     backend : tcp://127.0.0.1:9700
+    PYMOSA_Histogrammer :
+        kind : pymosa_histogrammer
+        frontend : tcp://127.0.0.1:8700
+        backend : tcp://127.0.0.1:8800
+        noisy_threshold : 100
+#    Pybar_Histogrammer :
+#        kind : pybar_fei4_histogrammer
+#        frontend : tcp://127.0.0.1:9700
+#        backend : tcp://127.0.0.1:9800
+    HIT_Correlator : 
+        kind : hit_correlator_converter
+        frontend : 
+          - tcp://127.0.0.1:8700
+          - tcp://127.0.0.1:9700
+        backend : tcp://127.0.0.1:8900
+        correlation_planes:
+            - name : Mimosa26 Plane 1
+              dut_type : M26
+              address : tcp://127.0.0.1:8700
+              id : 0
+            - name : Mimosa26 Plane 2
+              dut_type : M26
+              address : tcp://127.0.0.1:8700
+              id : 1
+            - name : Mimosa26 Plane 3
+              dut_type : M26
+              address : tcp://127.0.0.1:8700
+              id : 2
+            - name : Mimosa26 Plane 4
+              dut_type : M26
+              address : tcp://127.0.0.1:8700
+              id : 3  
+#            - name : FE-I4 plane
+#              dut_type : FE-I4
+#              address : tcp://127.0.0.1:9700
+
+receiver :
+    PYMOSA_Receiver :
+        kind : pymosa_receiver
+        frontend : tcp://127.0.0.1:8800
+#    Pybar_Receiver :
+#        kind : pybar_fei4
+#        frontend : tcp://127.0.0.1:9800
+    HIT_Correlator :
+        kind : hit_correlator_receiver
+        frontend : tcp://127.0.0.1:8900
+        correlation_planes:
+            - name : Mimosa26 Plane 1
+              dut_type : M26
+            - name : Mimosa26 Plane 2
+              dut_type : M26
+            - name : Mimosa26 Plane 3
+              dut_type : M26
+            - name : Mimosa26 Plane 4
+              dut_type : M26
+#            - name : FE-I4 plane
+#              dut_type : FE-I4
