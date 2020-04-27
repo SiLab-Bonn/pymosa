@@ -41,14 +41,14 @@ Install additional required packages:
 conda install bitarray matplotlib numba numpy pyqt pytables pyyaml qtpy tqdm
 ```
 
-Install [Basil](https://github.com/SiLab-Bonn/basil) (>=3.0.0,<4.0.0):
+Install [Basil](https://github.com/SiLab-Bonn/basil):
 ```bash
 pip install 'basil_daq>=3.0.0,<4.0.0'
 ```
 
 Install [Mimosa26 Interpreter](https://github.com/SiLab-Bonn/pymosa_mimosa26_interpreter):
 ```bash
-pip install git+https://github.com/SiLab-Bonn/pymosa_mimosa26_interpreter@master
+pip install 'pymosa_mimosa26_interpreter>=1.0.0'
 ```
 
 Install [Online Monitor](https://github.com/SiLab-Bonn/online_monitor):

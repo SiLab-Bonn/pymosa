@@ -1,10 +1,11 @@
 # Core functionality
-basil-daq>=3.0.0,<4.0.0
+basil_daq>=3.0.0,<4.0.0
 bitarray>=0.8.1
 matplotlib
 numba
 numpy
 online_monitor>=0.4.2,<0.5
+pymosa_mimosa26_interpreter>=1.0.0
 # pyqt -> this line is intentionally commented out
 pyyaml
 qtpy

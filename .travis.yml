@@ -26,9 +26,9 @@ install:
   # Install basil
   - pip install 'basil-daq>=3.0.0,<4.0.0'
   # Install pymosa_mimosa26_interpreter
-  - pip install git+https://github.com/SiLab-Bonn/pymosa_mimosa26_interpreter@master
+  - pip install 'pymosa_mimosa26_interpreter>=1.0.0'
   # Install online_monitor
-  - pip install git+https://github.com/SiLab-Bonn/online_monitor@development
+  - pip install 'online_monitor>=0.4.2,<0.5'
   - pip install -e .
   - conda list
   - pip list
