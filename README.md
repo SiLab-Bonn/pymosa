@@ -15,7 +15,7 @@ The time information for the Mimosa26 hit data is generated in the FPGA on the M
 This time resolution is sufficient to generate telescope tracks with high efficiency even in a high-density beam.
 
 The raw data (time information together with the Mimosa26 raw data) is collected by the MMC3 readout board and send to the host PC via TCP/IP where it is compressed and recorded in a HDF5 file.
-The raw data can be analyzed with the [Mimosa26 Interpreter](https://github.com/SiLab-Bonn/pyBAR_mimosa26_interpreter).
+The raw data can be analyzed with the [Mimosa26 Interpreter](https://github.com/SiLab-Bonn/pymosa_mimosa26_interpreter).
 The analyzed data (hit information and time information) can be obtained from a HDF5 table.
 
 An additional RJ45 connector provides an interface to the [EUDET Trigger Logic Unit](https://www.eudet.org/e26/e28/e42441/e57298/EUDET-MEMO-2009-04.pdf) (TLU).
@@ -46,9 +46,9 @@ Install [Basil](https://github.com/SiLab-Bonn/basil) (>=3.0.0,<4.0.0):
 pip install 'basil_daq>=3.0.0,<4.0.0'
 ```
 
-Install [Mimosa26 Interpreter](https://github.com/SiLab-Bonn/pyBAR_mimosa26_interpreter):
+Install [Mimosa26 Interpreter](https://github.com/SiLab-Bonn/pymosa_mimosa26_interpreter):
 ```bash
-pip install git+https://github.com/SiLab-Bonn/pyBAR_mimosa26_interpreter@master
+pip install git+https://github.com/SiLab-Bonn/pymosa_mimosa26_interpreter@master
 ```
 
 Install [Online Monitor](https://github.com/SiLab-Bonn/online_monitor):

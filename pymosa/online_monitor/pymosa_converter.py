@@ -3,7 +3,7 @@ from zmq.utils import jsonapi
 
 from online_monitor.converter.transceiver import Transceiver
 from online_monitor.utils import utils
-from pyBAR_mimosa26_interpreter import raw_data_interpreter
+from pymosa_mimosa26_interpreter import raw_data_interpreter
 
 
 class PymosaMimosa26(Transceiver):
