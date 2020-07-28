@@ -133,7 +133,7 @@ class TluTuning(m26):
 
                     # Determine best delay setting (center of working delay settings)
                     good_indices = np.where(np.logical_and(data_array['error_rate'][:-1] == 0, np.diff(data_array['error_rate']) == 0))[0]
-                    best_index = good_indices[good_indices.shape[0] / 2]
+                    best_index = good_indices[good_indices.shape[0] // 2]
                     best_delay_setting = data_array['TRIGGER_DATA_DELAY'][best_index]
                     logging.info('The best delay setting for this setup is %d', best_delay_setting)
 
