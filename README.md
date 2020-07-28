@@ -85,13 +85,13 @@ The IP address can be changed via the following steps:
 - Locate PMOD Pin1 (indicated by a white dot on the PCB).
 - The IP is set by putting jumpers on the PMOD connector, which short pin 1+2, 3+4, 5+6 and 7+8. Standard binary counting is used:
 
-        | PMOD_7+8 | PMOD_5+6 | PMOD_3+4 | PMOD_1+2 | IP_ADDRESS    |
-        | -------- | -------- | -------- | -------- | ------------- |
-        | 0        | 0        | 0        | 0        | 192.168.10.12 |
-        | 0        | 0        | 0        | 1        | 192.168.11.12 |
-        | ...      | ...      | ...      | ...      | ...           |
-        | 1        | 1        | 1        | 0        | 192.168.24.12 |
-        | 1        | 1        | 1        | 1        | 192.168.25.12 |
+    | PMOD_7+8 | PMOD_5+6 | PMOD_3+4 | PMOD_1+2 | IP_ADDRESS    |
+    | -------- | -------- | -------- | -------- | ------------- |
+    | 0        | 0        | 0        | 0        | 192.168.10.12 |
+    | 0        | 0        | 0        | 1        | 192.168.11.12 |
+    | ...      | ...      | ...      | ...      | ...           |
+    | 1        | 1        | 1        | 0        | 192.168.24.12 |
+    | 1        | 1        | 1        | 1        | 192.168.25.12 |
 
 
 - Double check, that you did not place the jumper in the wrong place!
