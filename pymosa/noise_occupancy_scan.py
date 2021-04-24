@@ -27,7 +27,7 @@ class NoiseOccScan(m26):
         logging.info('Noise occupancy:         %s', " | ".join([repr(count).rjust(max(3, len(m26_rx_names[index]))) for index, count in enumerate(self.hit_occ_map[:, :, :len(m26_rx_names)].sum(axis=(0, 1)))]))
 
     def take_data(self, update_rate=1):
-        with self.readout():
+        with self.readout(enabled_m26_channels=self.enabled_m26_channels):
             logging.info('Taking data...')
             self.pbar = tqdm(total=self.scan_timeout, ncols=80)
             for _ in range(int(self.scan_timeout / update_rate)):
@@ -52,6 +52,7 @@ class NoiseOccScan(m26):
         self.hist_occ = oa.OccupancyHistogramming()
 
         self.scan_timeout = self.telescope_conf.get('scan_timeout', 5)  # time for which noise occupancy is measured in seconds
+        self.enabled_m26_channels = self.telescope_conf.get('enabled_m26_channels', None)
 
     def open_file(self):
         self.raw_data_file = open_raw_data_file(filename=self.run_filename,
@@ -93,9 +94,9 @@ class NoiseOccScan(m26):
         output_file = self.run_filename + '_interpreted.pdf'
         logging.info('Plotting results into {0}'.format(output_file))
         with PdfPages(output_file) as output_pdf:
-            for plane in range(6):
+            for plane in [int(ch[-1]) for ch in self.enabled_m26_channels] if self.enabled_m26_channels else range(6):
                 plotting.plot_occupancy(hist=np.ma.masked_where(self.hit_occ_map[:, :, plane] == 0, self.hit_occ_map[:, :, plane]).T,
-                                        title='Occupancy for plane %i' % plane,
+                                        title='Occupancy for plane %i' % (plane + 1),
                                         output_pdf=output_pdf)
 
 

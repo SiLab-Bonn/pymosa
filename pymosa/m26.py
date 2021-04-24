@@ -71,6 +71,7 @@ class m26(object):
         self.scan_timeout = self.telescope_conf.get('scan_timeout', 0)  # default 0: no scan timeout
         self.max_triggers = self.telescope_conf.get('max_triggers', 0)  # default 0: infinity triggers
         self.send_data = self.telescope_conf.get('send_data', None)  # default None: do not send data to online monitor
+        self.enabled_m26_channels = self.telescope_conf.get('enabled_m26_channels', None)  # default None: all channels enabled
 
         if not os.path.exists(self.working_dir):
             os.makedirs(self.working_dir)
@@ -200,7 +201,7 @@ class m26(object):
     def scan(self):
         '''Scan Mimosa26 telescope loop.
         '''
-        with self.readout():
+        with self.readout(enabled_m26_channels=self.enabled_m26_channels):
             got_data = False
             start = time()
             while not self.stop_scan:
