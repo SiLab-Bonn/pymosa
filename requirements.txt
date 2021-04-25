@@ -11,3 +11,4 @@ pyyaml
 qtpy
 tables
 tqdm
+pyqtgraph<0.12
