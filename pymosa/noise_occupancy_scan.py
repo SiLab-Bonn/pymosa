@@ -120,7 +120,7 @@ if __name__ == "__main__":
         config = yaml.safe_load(f)
 
     if args.scan_timeout is not None:
-        config["scan_timeout"] = range(args.scan_timeout)
+        config["scan_timeout"] = args.scan_timeout
 
     noise_occ_scan = NoiseOccScan()  # None: use default hardware configuration
     # Initialize telescope hardware and set up parameters
