@@ -1,4 +1,4 @@
-# pymosa [![Build Status](https://travis-ci.org/SiLab-Bonn/pymosa.svg?branch=master)](https://travis-ci.org/SiLab-Bonn/pymosa)
+# pymosa ![Build status](https://github.com/SiLab-Bonn/pymosa/actions/workflows/tests.yml/badge.svg?branch=master)
 
 A readout software for [Mimosa26](http://www.iphc.cnrs.fr/List-of-MIMOSA-chips.html) CMOS pixel sensors in Python together with the FPGA-based MMC3 (Multi Module Card) readout hardware.
 
