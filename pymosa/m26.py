@@ -18,8 +18,8 @@ from tqdm import tqdm
 from basil.dut import Dut
 from basil.utils.BitLogic import BitLogic
 
-from m26_raw_data import open_raw_data_file, send_meta_data, save_configuration_dict
-from m26_readout import M26Readout
+from pymosa.m26_raw_data import open_raw_data_file, send_meta_data, save_configuration_dict
+from pymosa.m26_readout import M26Readout
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
