@@ -330,11 +330,26 @@ class OccupancyHistogramming(object):
             except queue.Empty:
                 continue
 
-    def __del__(self):
+    def close(self):
+        ''' Close process and wait till done. Likely needed to give access to pytable file handle.'''
+        logger.info('Stopping process %d', self.p.pid)
         self._raw_data_queue.close()
         self._raw_data_queue.join_thread()  # Needed otherwise IOError: [Errno 232] The pipe is being closed
         self.stop.set()
         self.p.join()
+        del self.p  # explicit delete required to free memory
+        self.p = None
+
+    def __del__(self):
+        if self.p and self.p.is_alive():
+            logger.warning('Process still running. Was close() called?')
+            self.close()
+
+    # def __del__(self):
+    #     self._raw_data_queue.close()
+    #     self._raw_data_queue.join_thread()  # Needed otherwise IOError: [Errno 232] The pipe is being closed
+    #     self.stop.set()
+    #     self.p.join()
 
 
 if __name__ == "__main__":
