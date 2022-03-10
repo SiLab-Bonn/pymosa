@@ -1,9 +1,7 @@
 # *** hardware setup/configuration ***
 run_number :  # Base run number, will be automatically increased; if none is given, generate filename
 output_folder :  # Output folder for the telescope data; if none is given, the current working directory is used
-m26_configuration_file : './m26_config/m26_threshold_8.yaml'  # Configuration file for Mimosa26 sensors, default: threshold 8
-m26_jtag_configuration : True  # Send Mimosa26 configuration via JTAG, default: True
-no_data_timeout : 30  # No data timeout after which the scan will be aborted, in seconds; if 0, the timeout is disabled
+m26_configuration_file :  # Configuration file for Mimosa26 sensors, default: 'm26_config/m26_threshold_8.yaml'
 scan_timeout : 0  # Timeout after which the scan will be stopped, in seconds; if 0, the timeout is disabled; use Ctrl-C to stop run
 max_triggers : 0  # Maximum number of triggers; if 0, there is no limit on the number of triggers; use Ctrl-C to stop run
 send_data : 'tcp://127.0.0.1:8500'  # TCP address to which the telescope data is send; to allow incoming connections on all interfaces use 0.0.0.0

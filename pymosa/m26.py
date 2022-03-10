@@ -6,20 +6,20 @@
 #
 
 import logging
-import signal
 import os
-from time import time, sleep, strftime
+import signal
 from contextlib import contextmanager
 from threading import Timer
+from time import sleep, strftime, time
 
 import yaml
-from tqdm import tqdm
-
 from basil.dut import Dut
 from basil.utils.BitLogic import BitLogic
+from tqdm import tqdm
 
-from m26_raw_data import open_raw_data_file, send_meta_data, save_configuration_dict
-from m26_readout import M26Readout
+import pymosa
+from pymosa.m26_raw_data import open_raw_data_file, save_configuration_dict, send_meta_data
+from pymosa.m26_readout import M26Readout
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -66,6 +66,8 @@ class m26(object):
             self.output_filename = os.path.basename(self.output_filename)
         self.run_number = self.telescope_conf.get('run_number', None)
         self.m26_configuration_file = self.telescope_conf.get('m26_configuration_file', None)
+        if not self.m26_configuration_file:
+            self.m26_configuration_file = 'm26_config/m26_threshold_8.yaml'
         self.m26_jtag_configuration = self.telescope_conf.get('m26_jtag_configuration', True)  # default True
         self.no_data_timeout = self.telescope_conf.get('no_data_timeout', 0)  # default None: no data timeout
         self.scan_timeout = self.telescope_conf.get('scan_timeout', 0)  # default 0: no scan timeout
@@ -93,7 +95,7 @@ class m26(object):
         if m26_configuration_file:
             self.m26_configuration_file = m26_configuration_file
         else:
-            m26_configuration_file = self.m26_configuration_file
+            m26_configuration_file = os.path.join(os.path.dirname(pymosa.__file__), self.m26_configuration_file)
         if not self.m26_configuration_file:
             raise ValueError('M26 configuration file not provided')
         logger.info('Loading M26 configuration file %s', m26_configuration_file)
