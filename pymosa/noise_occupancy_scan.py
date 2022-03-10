@@ -85,7 +85,7 @@ class NoiseOccScan(m26):
             for region in range(4):
                 self.fake_hit_rate_meas[plane, region] = self.hit_occ_map[m26_regions[region][0]:m26_regions[region][1], :, plane].sum() / 576. / 288. / self.scan_timeout / 1e6 * 115.2
 
-        self.hist_occ.stop.set()  # stop analysis process
+        self.hist_occ.close()  # stop analysis process
 
         # Log status (fake hit rate, noise occupoancy, threshold setting)
         self.print_log_status()
