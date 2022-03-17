@@ -35,7 +35,7 @@ class NoiseOccScan(m26):
                 try:
                     self.pbar.update(update_rate)
                 except ValueError:
-                        pass
+                    pass
 
             self.pbar.close()
 
