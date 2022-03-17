@@ -129,6 +129,12 @@ def is_frame_trailer1(word, plane):  # Check if frame trailer1 word for the actu
     return (0x0000ffff & word) == (0xaa50 | plane)
 
 
+# Trigger words
+@njit
+def is_trigger_word(word):  # Check if TLU word (trigger)
+    return (0x80000000 & word) == 0x80000000
+
+
 @njit
 def histogram(raw_data, occ_hist, m26_frame_ids, m26_frame_length, m26_data_loss, m26_word_index, m26_timestamps, last_m26_timestamps, m26_n_words, m26_rows, m26_frame_status, last_completed_m26_frame_ids):
     ''' Raw data to 2D occupancy histogram '''
@@ -230,8 +236,11 @@ def histogram(raw_data, occ_hist, m26_frame_ids, m26_frame_length, m26_data_loss
                                 break
                             # Fill occupancy hist
                             occ_hist[column + k, m26_rows[plane_id], plane_id] += 1
-        else:  # Raw data word is TLU/trigger word
+        elif is_trigger_word(raw_data_word):  # Raw data word is TLU/trigger word
             pass  # Not needed here
+        else:  # Raw data contains unknown word, neither M26 nor TLU word
+            for tmp_plane_index in range(6):
+                m26_data_loss[tmp_plane_index] = True
 
     return m26_frame_ids, m26_frame_length, m26_data_loss, m26_word_index, m26_timestamps, last_m26_timestamps, m26_n_words, m26_rows, m26_frame_status, last_completed_m26_frame_ids
 
@@ -313,14 +322,14 @@ class OccupancyHistogramming(object):
         # Per frame variables
         m26_frame_ids = np.zeros(shape=(6, ), dtype=np.int64)  # The Mimosa26 frame ID of the actual frame
         m26_frame_length = np.zeros(shape=(6, ), dtype=np.uint32)  # The number of "useful" data words for the actual frame
-        m26_data_loss = np.ones((6, ), dtype=np.bool)  # The data loss status for the actual frame
+        m26_data_loss = np.ones((6, ), dtype=np.bool_)  # The data loss status for the actual frame
         m26_word_index = np.zeros(shape=(6, ), dtype=np.uint32)  # The word index per device of the actual frame
         m26_timestamps = np.zeros(shape=(6, ), dtype=np.int64)  # The timestamp for each plane (in units of 40 MHz)
         last_m26_timestamps = np.zeros(shape=(6, ), dtype=np.int64)
         m26_n_words = np.zeros(shape=(6, ), dtype=np.uint32)  # The number of words containing column / row info
         m26_rows = np.zeros(shape=(6, ), dtype=np.uint32)  # The actual readout row (rolling shutter)
         m26_frame_status = np.zeros(shape=(6, ), dtype=np.uint32)  # The status flags for the actual frames
-        last_completed_m26_frame_ids = np.full(shape=6, dtype=np.int64, fill_value=-1)  # The status if the frame is complete for the actual frame
+        last_completed_m26_frame_ids = -1 * np.ones(shape=6, dtype=np.int64)  # The status if the frame is complete for the actual frame
         while not stop.is_set():
             try:
                 raw_data = raw_data_queue.get(timeout=self._queue_timeout)
