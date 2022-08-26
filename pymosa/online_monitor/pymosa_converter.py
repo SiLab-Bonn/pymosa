@@ -36,7 +36,7 @@ class PymosaMimosa26(Transceiver):
             # Add info to meta data
             data[0][1]['meta_data'].update({'n_hits': self.n_hits, 'n_events': self.n_events})
             return [data[0][1]]
-        hits = self._raw_data_interpreter.interpret_raw_data(raw_data=data[0][1])
+        hits, _ = self._raw_data_interpreter.interpret_raw_data(raw_data=data[0][1])
 
         interpreted_data = {
             'hits': hits
