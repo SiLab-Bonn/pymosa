@@ -49,12 +49,12 @@ class PymosaMimosa26(Receiver):
             dock_occcupancy.addWidget(self.plots[2 * plane])
 
 #             event_status_widget = pg.PlotWidget()
-#             self.event_status_plots.append(event_status_widget.plot(np.linspace(-0.5, 15.5, 17), np.zeros((16)), stepMode=True))
+#             self.event_status_plots.append(event_status_widget.plot(np.linspace(-0.5, 15.5, 17), np.zeros((16)), stepMode='center'))
 #             event_status_widget.showGrid(y=True)
 #             dock_event_status.addWidget(event_status_widget)
 
             self.event_status_widgets.append(pg.PlotWidget())
-            self.event_status_plots.append(self.event_status_widgets[2 * plane].plot(np.linspace(-0.5, 15.5, 17), np.zeros((16)), stepMode=True))
+            self.event_status_plots.append(self.event_status_widgets[2 * plane].plot(np.linspace(-0.5, 15.5, 17), np.zeros((16)), stepMode='center'))
             self.event_status_widgets[2 * plane].showGrid(y=True)
             dock_event_status.addWidget(self.event_status_widgets[2 * plane])
 
@@ -74,7 +74,7 @@ class PymosaMimosa26(Receiver):
             dock_occcupancy_2.addWidget(self.plots[2 * plane + 1])
 
             self.event_status_widgets.append(pg.PlotWidget())
-            self.event_status_plots.append(self.event_status_widgets[2 * plane + 1].plot(np.linspace(-0.5, 15.5, 17), np.zeros((16)), stepMode=True))
+            self.event_status_plots.append(self.event_status_widgets[2 * plane + 1].plot(np.linspace(-0.5, 15.5, 17), np.zeros((16)), stepMode='center'))
             self.event_status_widgets[2 * plane + 1].showGrid(y=True)
             # self.event_status_widgets[2 * plane + 1].setLogMode(y=True)
             dock_event_status_2.addWidget(self.event_status_widgets[2 * plane + 1])
@@ -156,7 +156,7 @@ class PymosaMimosa26(Receiver):
             for plane, plot in enumerate(self.plots):
                 self.occupancy_images[plane].setImage(data['occupancies'][plane], autoDownsample=True)
                 self.occ_hist_sum[plane] = data['occupancies'][plane].sum()
-                self.event_status_plots[plane].setData(x=np.linspace(-0.5, 31.5, 33), y=data['event_status'][plane], stepMode=True, fillLevel=0, brush=(0, 0, 255, 150))
+                self.event_status_plots[plane].setData(x=np.linspace(-0.5, 31.5, 33), y=data['event_status'][plane], stepMode='center', fillLevel=0, brush=(0, 0, 255, 150))
                 plot.setTitle('Occupancy Map, Sum: %i' % self.occ_hist_sum[plane])
         else:
             update_rate(data['meta_data']['fps'], data['meta_data']['hps'], data['meta_data']['total_hits'], data['meta_data']['eps'], data['meta_data']['total_events'])
