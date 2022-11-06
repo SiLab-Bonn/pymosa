@@ -10,8 +10,6 @@ import os
 import threading
 import time
 
-from mock import patch
-
 import pytest
 import tables as tb
 import numpy as np
