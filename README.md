@@ -34,7 +34,7 @@ Within pymosa the configuration can be set with the following files:
 
 ## Installation
 
-Python 2.7 or Python 3 or higher must be used. There are many ways to install Python, though we recommend using [Anaconda Python](https://www.anaconda.com/distribution/) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html).
+Use Python 3.7 or higher. There are many ways to install Python, though we recommend using [Anaconda Python](https://www.anaconda.com/distribution/) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html).
 
 To install `pymosa` simply use `pip`:
 
