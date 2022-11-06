@@ -9,37 +9,21 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Anaconda
-      uses: conda-incubator/setup-miniconda@v2
+    # Check out repo
+    - uses: actions/checkout@v3
+    - name: Setup python
+      uses: actions/setup-python@v4
       with:
-        auto-update-conda: true
-        python-version: 3.9
-    - name: Install Conda dependencies
-      shell: bash -l {0}
+        python-version: "3.9"
+    
+    - name: Install pymosa
       run: |
-        conda info -a
-        conda install pytest bitarray matplotlib numba numpy pyqt pytables pyyaml qtpy tqdm nose
-    - name: Install basil
-      shell: bash -l {0}
-      run: |
-        pip install 'basil-daq>=3.0.0,<4.0.0'
-    - name: Install Python dependencies
-      shell: bash -l {0}
-      run: |
-        pip install 'pymosa_mimosa26_interpreter>=1.0.0'
-        pip install 'online_monitor>=0.4.2,<0.5'
-    - name: Install packages for GUI tests
-      shell: bash -l {0}
-      run: |
-        pip install xvfbwrapper
-        sudo apt-get install '^libxcb.*-dev' libxkbcommon-x11-0
-    - name: Install package
-      shell: bash -l {0}
-      run: |
+        pip install --upgrade pip
         pip install -e .
+        plugin_online_monitor pymosa/online_monitor
+
+    - name: Headless display setup
+      uses: pyvista/setup-headless-display-action@v1    
+    
     - name: Test
-      shell: bash -l {0}
-      run: |
-        cd pymosa/tests
-        pytest -s -v
+      run: pytest -s -v

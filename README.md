@@ -36,30 +36,19 @@ Within pymosa the configuration can be set with the following files:
 
 Python 2.7 or Python 3 or higher must be used. There are many ways to install Python, though we recommend using [Anaconda Python](https://www.anaconda.com/distribution/) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html).
 
-Install additional required packages:
-```bash
-conda install bitarray matplotlib numba numpy pyqt pytables pyyaml qtpy tqdm
-```
+To install `pymosa` simply use `pip`:
 
-Install [Basil](https://github.com/SiLab-Bonn/basil):
 ```bash
-pip install 'basil_daq>=3.0.0,<4.0.0'
+pip install -e .
 ```
-
-Install [Mimosa26 Interpreter](https://github.com/SiLab-Bonn/pymosa_mimosa26_interpreter):
+In order to use `pymosa`s  online monitor plugin, add it to the `online_monitor` package by calling
 ```bash
-pip install 'pymosa_mimosa26_interpreter>=1.0.0'
+plugin_online_monitor pymosa/online_monitor
 ```
-
-Install [Online Monitor](https://github.com/SiLab-Bonn/online_monitor):
+To check the installation is complete, run the tests
 ```bash
-pip install 'online_monitor>=0.4.2,<0.5'
-```
-
-Finally, install pymosa via:
-```bash
-pip insall -e .
-```
+pytest pymosa/tests
+``` 
 
 ## Usage
 
