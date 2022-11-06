@@ -15,7 +15,11 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: "3.9"
-    
+
+    - name: Qt5 defaults
+      run: |
+        sudo apt install qt5-default
+            
     - name: Install pymosa
       run: |
         pip install --upgrade pip
