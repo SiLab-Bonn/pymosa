@@ -83,12 +83,7 @@ class TestOnlineMonitor(unittest.TestCase):
         with open('tmp_cfg.yml', 'w') as outfile:
             config_file = create_config_yaml()
             outfile.write(config_file)
-        # Linux CIs run usually headless, thus virtual x server is needed for gui testing
-        if os.getenv('CI', False):
-            # raise unittest.SkipTest("CERN CI runner with Miniconda python docker has segfault in these tests.")
-            from xvfbwrapper import Xvfb
-            cls.vdisplay = Xvfb()
-            cls.vdisplay.start()
+        
         # Start the simulation producer to create some fake data
         cls.prod_sim_proc = start_pymosa_online_monitor.run_script_in_shell('', 'tmp_cfg.yml', 'start_producer_sim')
         # Start converter
