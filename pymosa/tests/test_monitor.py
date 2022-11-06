@@ -44,6 +44,7 @@ def create_config_yaml():
     devices['HIT_Correlator'] = {'kind': 'hit_correlator_converter',
                                  'frontend': 'tcp://127.0.0.1:8700',
                                  'backend': 'tcp://127.0.0.1:8900',
+                                 'duts': {'M26': {'n_columns': 1152, 'n_rows': 576, 'column_size': 18.4, 'row_size': 18.4}},
                                  'correlation_planes': [{'name': 'Mimosa26 Plane 1', 'dut_type': 'M26', 'address': 'tcp://127.0.0.1:8700', 'id': 0},
                                                         {'name': 'Mimosa26 Plane 2', 'dut_type': 'M26', 'address': 'tcp://127.0.0.1:8700', 'id': 1}]
                                  }
@@ -56,6 +57,7 @@ def create_config_yaml():
                                   }
     devices['HIT_Correlator'] = {'kind': 'hit_correlator_receiver',
                                  'frontend': 'tcp://127.0.0.1:8900',
+                                 'duts': {'M26': {'n_columns': 1152, 'n_rows': 576, 'column_size': 18.4, 'row_size': 18.4}},
                                  'correlation_planes': [{'name': 'Mimosa26 Plane 1', 'dut_type': 'M26'},
                                                         {'name': 'Mimosa26 Plane 2', 'dut_type': 'M26'}]
                                  }
