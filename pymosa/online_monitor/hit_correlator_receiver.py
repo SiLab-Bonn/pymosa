@@ -16,10 +16,10 @@ class HitCorrelator(Receiver):
 
     def setup_receiver(self):
         self.set_bidirectional_communication()  # We want to change converter settings
-        # Load correlation DUT types
-        config = os.path.join(os.path.dirname(__file__), 'correlation_duts.yaml')
-        with open(config) as f:
-            self.correlator_config = yaml.safe_load(f)
+        
+        # Check that we have the DUTs defined
+        if not 'duts' in self.config:
+            raise KeyError("Define DUTs in the configuration.yaml")
 
     def setup_widgets(self, parent, name):
         self.occupancy_images_columns = {}
@@ -164,10 +164,10 @@ class HitCorrelator(Receiver):
                 self.plot2.getAxis('left').setLabel(text=dut2_name + ' Rows')
 
             elif scale_state == 2:  # um scaling
-                col_size_dut_1 = self.correlator_config[self.config['correlation_planes'][dut1]['dut_type']]['column_size']
-                row_size_dut_1 = self.correlator_config[self.config['correlation_planes'][dut1]['dut_type']]['row_size']
-                col_size_dut_2 = self.correlator_config[self.config['correlation_planes'][dut1]['dut_type']]['column_size']
-                row_size_dut_2 = self.correlator_config[self.config['correlation_planes'][dut1]['dut_type']]['row_size']
+                col_size_dut_1 = self.config['duts'][self.config['correlation_planes'][dut1]['dut_type']]['column_size']
+                row_size_dut_1 = self.config['duts'][self.config['correlation_planes'][dut1]['dut_type']]['row_size']
+                col_size_dut_2 = self.config['duts'][self.config['correlation_planes'][dut1]['dut_type']]['column_size']
+                row_size_dut_2 = self.config['duts'][self.config['correlation_planes'][dut1]['dut_type']]['row_size']
                 if transpose_state == 0:  # False
                     self.plot1.getAxis('bottom').setScale(row_size_dut_1)
                     self.plot2.getAxis('bottom').setScale(col_size_dut_1)
