@@ -74,7 +74,8 @@ def test_occupancy_histogramming(data_folder, occ_hist_oa):
     for words in get_raw_data(raw_data_file):
         occ_hist_oa.add(words)
 
-    time.sleep(1.0)
+    # FIXME: Bad practice, use Queue wait or timeout below
+    time.sleep(5.0)
 
     occ_hist = occ_hist_oa.get()
 

@@ -97,10 +97,9 @@ class HitCorrelator(Transceiver):
         self.row_corr_hist = 0  # Correlation histogram for rows
         self.corr_data_buffer_filled = False  # Flag indicating if correlation data buffer is filled.
 
-        # Load correlation DUT types
-        config = os.path.join(os.path.dirname(__file__), 'correlation_duts.yaml')
-        with open(config) as f:
-            self.correlator_config = yaml.safe_load(f)
+        # Check that we have the DUTs defined
+        if not 'duts' in self.config:
+            raise KeyError("Define DUTs in the configuration.yaml")
 
     def deserialize_data(self, data):  # According to pyBAR data serilization
         datar, meta = utils.simple_dec(data)
@@ -222,10 +221,10 @@ class HitCorrelator(Transceiver):
 
         # Determine the needed histogramm size according to selected DUTs
         def create_corr_hist(ref, dut, transpose):
-            n_cols_ref = self.correlator_config[self.config['correlation_planes'][ref]['dut_type']]['n_columns']
-            n_rows_ref = self.correlator_config[self.config['correlation_planes'][ref]['dut_type']]['n_rows']
-            n_cols_dut = self.correlator_config[self.config['correlation_planes'][dut]['dut_type']]['n_columns']
-            n_rows_dut = self.correlator_config[self.config['correlation_planes'][dut]['dut_type']]['n_rows']
+            n_cols_ref = self.config['duts'][self.config['correlation_planes'][ref]['dut_type']]['n_columns']
+            n_rows_ref = self.config['duts'][self.config['correlation_planes'][ref]['dut_type']]['n_rows']
+            n_cols_dut = self.config['duts'][self.config['correlation_planes'][dut]['dut_type']]['n_columns']
+            n_rows_dut = self.config['duts'][self.config['correlation_planes'][dut]['dut_type']]['n_rows']
             if transpose:
                 self.column_corr_hist = np.zeros(shape=(n_rows_ref, n_cols_dut), dtype=np.uint32)
                 self.row_corr_hist = np.zeros(shape=(n_cols_ref, n_rows_dut), dtype=np.uint32)
