@@ -24,7 +24,7 @@ setup(
     maintainer_email=author_email,
     install_requires=install_requires,
     packages=find_packages(),
-    setup_requires=['setuptools', 'online_monitor>=0.4.2<0.5'],
+    setup_requires=['setuptools', 'online_monitor>=0.5'],
     include_package_data=True,  # accept all data files and directories matched by MANIFEST.in or found in source control
     keywords=['silicon', 'detector', 'telescope', 'Mimosa26', 'EUDET'],
     platforms='any',
@@ -35,18 +35,3 @@ setup(
         ]
     },
 )
-
-# FIXME: bad practice to put code into setup.py
-# Add the online_monitor Pymosa plugins
-try:
-    import os
-    import pymosa
-    from online_monitor.utils import settings
-    # Get the absoulte path of this package
-    package_path = os.path.dirname(pymosa.__file__)
-    # Add online_monitor plugin folder to entity search paths
-    settings.add_producer_sim_path(os.path.join(package_path, 'online_monitor'))
-    settings.add_converter_path(os.path.join(package_path, 'online_monitor'))
-    settings.add_receiver_path(os.path.join(package_path, 'online_monitor'))
-except (ImportError, pkg_resources.DistributionNotFound):
-    pass

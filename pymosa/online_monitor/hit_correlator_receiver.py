@@ -2,9 +2,8 @@ import os
 
 import yaml
 import numpy as np
-from PyQt5 import Qt
+from PyQt5 import QtWidgets
 import pyqtgraph as pg
-from pyqtgraph.Qt import QtGui
 from pyqtgraph.dockarea import DockArea, Dock
 from zmq.utils import jsonapi
 
@@ -45,21 +44,21 @@ class HitCorrelator(Receiver):
         dock_corr_row = Dock('Row Correlation')
         dock_corr_row.setMinimumSize(400, 400)
 
-        cb = QtGui.QWidget()
-        layout0 = QtGui.QGridLayout()
+        cb = QtWidgets.QWidget()
+        layout0 = QtWidgets.QGridLayout()
         cb.setLayout(layout0)
-        self.combobox1 = Qt.QComboBox()
+        self.combobox1 = QtWidgets.QComboBox()
         self.combobox1.addItems(dut_names)
         self.combobox1.setMinimumSize(100, 50)
         self.combobox1.setMaximumSize(200, 50)
-        self.combobox2 = Qt.QComboBox()
+        self.combobox2 = QtWidgets.QComboBox()
         self.combobox2.addItems(dut_names)
         self.combobox2.setMinimumSize(100, 50)
         self.combobox2.setMaximumSize(200, 50)
-        self.select_label = QtGui.QLabel('Correlate:')
-        self.select_label1 = QtGui.QLabel('    to    ')
-        self.start_button = QtGui.QPushButton('Start')
-        self.stop_button = QtGui.QPushButton('Stop')
+        self.select_label = QtWidgets.QLabel('Correlate:')
+        self.select_label1 = QtWidgets.QLabel('    to    ')
+        self.start_button = QtWidgets.QPushButton('Start')
+        self.stop_button = QtWidgets.QPushButton('Stop')
         self.start_button.setMinimumSize(75, 38)
         self.start_button.setMaximumSize(150, 38)
         self.stop_button.setMinimumSize(75, 38)
@@ -77,17 +76,17 @@ class HitCorrelator(Receiver):
         self.start_button.clicked.connect(lambda value: self.send_command('START %d' % value))
         self.stop_button.clicked.connect(lambda value: self.send_command('STOP %d' % value))
 
-        cw = QtGui.QWidget()
-        layout = QtGui.QGridLayout()
+        cw = QtWidgets.QWidget()
+        layout = QtWidgets.QGridLayout()
         cw.setLayout(layout)
-        reset_button = QtGui.QPushButton('Reset')
+        reset_button = QtWidgets.QPushButton('Reset')
         reset_button.setMinimumSize(100, 30)
         reset_button.setMaximumSize(300, 30)
         layout.setHorizontalSpacing(25)
         layout.addWidget(reset_button, 0, 1, 0, 1)
-        remove_background_checkbox = QtGui.QCheckBox('Remove background:')
+        remove_background_checkbox = QtWidgets.QCheckBox('Remove background:')
         layout.addWidget(remove_background_checkbox, 0, 2, 1, 1)
-        remove_background_spinbox = QtGui.QDoubleSpinBox()
+        remove_background_spinbox = QtWidgets.QDoubleSpinBox()
         remove_background_spinbox.setRange(0.0, 100.0)
         remove_background_spinbox.setValue(99.0)
         remove_background_spinbox.setSingleStep(1.0)
@@ -95,11 +94,11 @@ class HitCorrelator(Receiver):
         remove_background_spinbox.setPrefix('< ')
         remove_background_spinbox.setSuffix(' % maximum occupancy')
         layout.addWidget(remove_background_spinbox, 0, 3, 1, 1)
-        self.transpose_checkbox = QtGui.QCheckBox('Transpose columns and rows (of ref. plane)')
+        self.transpose_checkbox = QtWidgets.QCheckBox('Transpose columns and rows (of ref. plane)')
         layout.addWidget(self.transpose_checkbox, 1, 3, 1, 1)
-        self.convert_checkbox = QtGui.QCheckBox('Axes in ' + u'\u03BC' + 'm')
+        self.convert_checkbox = QtWidgets.QCheckBox('Axes in ' + u'\u03BC' + 'm')
         layout.addWidget(self.convert_checkbox, 1, 2, 1, 1)
-        self.rate_label = QtGui.QLabel("Readout Rate: Hz")
+        self.rate_label = QtWidgets.QLabel("Readout Rate: Hz")
         layout.addWidget(self.rate_label, 0, 4, 1, 1)
         dock_status.addWidget(cw)
         reset_button.clicked.connect(lambda: self.send_command('RESET'))

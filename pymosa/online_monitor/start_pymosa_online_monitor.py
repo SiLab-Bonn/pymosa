@@ -9,7 +9,7 @@ import os
 import subprocess
 
 import psutil
-from PyQt5 import Qt
+from PyQt5.QtWidgets import QApplication
 
 from online_monitor.OnlineMonitor import OnlineMonitorApplication
 from online_monitor.utils import utils
@@ -70,7 +70,7 @@ def main():
         except psutil.NoSuchProcess:
             pass
     # Start the online monitor
-    app = Qt.QApplication(sys.argv)
+    app = QApplication(sys.argv)
     win = OnlineMonitorApplication(args.config_file)
     win.show()
     sys.exit(appExec())

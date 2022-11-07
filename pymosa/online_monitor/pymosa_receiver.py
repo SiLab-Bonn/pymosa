@@ -1,10 +1,8 @@
 import time
 
 import numpy as np
-from PyQt5 import Qt
+from PyQt5 import QtWidgets
 import pyqtgraph as pg
-from pyqtgraph.Qt import QtGui
-import pyqtgraph.ptime as ptime
 from pyqtgraph.dockarea import DockArea, Dock
 
 from online_monitor.receiver.receiver import Receiver
@@ -51,12 +49,12 @@ class PymosaMimosa26(Receiver):
             dock_occcupancy.addWidget(self.plots[2 * plane])
 
 #             event_status_widget = pg.PlotWidget()
-#             self.event_status_plots.append(event_status_widget.plot(np.linspace(-0.5, 15.5, 17), np.zeros((16)), stepMode=True))
+#             self.event_status_plots.append(event_status_widget.plot(np.linspace(-0.5, 15.5, 17), np.zeros((16)), stepMode='center'))
 #             event_status_widget.showGrid(y=True)
 #             dock_event_status.addWidget(event_status_widget)
 
             self.event_status_widgets.append(pg.PlotWidget())
-            self.event_status_plots.append(self.event_status_widgets[2 * plane].plot(np.linspace(-0.5, 15.5, 17), np.zeros((16)), stepMode=True))
+            self.event_status_plots.append(self.event_status_widgets[2 * plane].plot(np.linspace(-0.5, 15.5, 17), np.zeros((16)), stepMode='center'))
             self.event_status_widgets[2 * plane].showGrid(y=True)
             dock_event_status.addWidget(self.event_status_widgets[2 * plane])
 
@@ -76,7 +74,7 @@ class PymosaMimosa26(Receiver):
             dock_occcupancy_2.addWidget(self.plots[2 * plane + 1])
 
             self.event_status_widgets.append(pg.PlotWidget())
-            self.event_status_plots.append(self.event_status_widgets[2 * plane + 1].plot(np.linspace(-0.5, 15.5, 17), np.zeros((16)), stepMode=True))
+            self.event_status_plots.append(self.event_status_widgets[2 * plane + 1].plot(np.linspace(-0.5, 15.5, 17), np.zeros((16)), stepMode='center'))
             self.event_status_widgets[2 * plane + 1].showGrid(y=True)
             # self.event_status_widgets[2 * plane + 1].setLogMode(y=True)
             dock_event_status_2.addWidget(self.event_status_widgets[2 * plane + 1])
@@ -85,22 +83,22 @@ class PymosaMimosa26(Receiver):
         dock_area.addDock(dock_status, 'top')
 
         # Status dock on top
-        cw = QtGui.QWidget()
+        cw = QtWidgets.QWidget()
         cw.setStyleSheet("QWidget {background-color:white}")
-        layout = QtGui.QGridLayout()
+        layout = QtWidgets.QGridLayout()
         cw.setLayout(layout)
-        self.rate_label = QtGui.QLabel("Readout Rate\n0 Hz")
-        self.hit_rate_label = QtGui.QLabel("Hit Rate\n0 Hz")
-        self.event_rate_label = QtGui.QLabel("Event Rate\n0 Hz")
-        self.timestamp_label = QtGui.QLabel("Data Timestamp\n")
-        self.plot_delay_label = QtGui.QLabel("Plot Delay\n")
-        self.scan_parameter_label = QtGui.QLabel("Scan Parameters\n")
-        self.spin_box = Qt.QSpinBox(value=0)
+        self.rate_label = QtWidgets.QLabel("Readout Rate\n0 Hz")
+        self.hit_rate_label = QtWidgets.QLabel("Hit Rate\n0 Hz")
+        self.event_rate_label = QtWidgets.QLabel("Event Rate\n0 Hz")
+        self.timestamp_label = QtWidgets.QLabel("Data Timestamp\n")
+        self.plot_delay_label = QtWidgets.QLabel("Plot Delay\n")
+        self.scan_parameter_label = QtWidgets.QLabel("Scan Parameters\n")
+        self.spin_box = QtWidgets.QSpinBox(value=0)
         self.spin_box.setMaximum(1000000)
         self.spin_box.setSuffix(" Readouts")
-        self.reset_button = QtGui.QPushButton('Reset')
-        self.noisy_checkbox = QtGui.QCheckBox('Mask noisy pixels')
-        self.convert_checkbox = QtGui.QCheckBox('Axes in ' + u'\u03BC' + 'm')
+        self.reset_button = QtWidgets.QPushButton('Reset')
+        self.noisy_checkbox = QtWidgets.QCheckBox('Mask noisy pixels')
+        self.convert_checkbox = QtWidgets.QCheckBox('Axes in ' + u'\u03BC' + 'm')
         layout.addWidget(self.timestamp_label, 0, 0, 0, 1)
         layout.addWidget(self.plot_delay_label, 0, 1, 0, 1)
         layout.addWidget(self.rate_label, 0, 2, 0, 1)
@@ -158,12 +156,12 @@ class PymosaMimosa26(Receiver):
             for plane, plot in enumerate(self.plots):
                 self.occupancy_images[plane].setImage(data['occupancies'][plane], autoDownsample=True)
                 self.occ_hist_sum[plane] = data['occupancies'][plane].sum()
-                self.event_status_plots[plane].setData(x=np.linspace(-0.5, 31.5, 33), y=data['event_status'][plane], stepMode=True, fillLevel=0, brush=(0, 0, 255, 150))
+                self.event_status_plots[plane].setData(x=np.linspace(-0.5, 31.5, 33), y=data['event_status'][plane], stepMode='center', fillLevel=0, brush=(0, 0, 255, 150))
                 plot.setTitle('Occupancy Map, Sum: %i' % self.occ_hist_sum[plane])
         else:
             update_rate(data['meta_data']['fps'], data['meta_data']['hps'], data['meta_data']['total_hits'], data['meta_data']['eps'], data['meta_data']['total_events'])
             self.timestamp_label.setText("Data Timestamp\n%s" % time.asctime(time.localtime(data['meta_data']['timestamp_stop'])))
             self.scan_parameter_label.setText("Scan Parameters\n%s" % ', '.join('%s: %s' % (str(key), str(val)) for key, val in data['meta_data']['scan_parameters'].items()))
-            now = ptime.time()
+            now = time.time()
             self.plot_delay = self.plot_delay * 0.9 + (now - data['meta_data']['timestamp_stop']) * 0.1
             self.plot_delay_label.setText("Plot Delay\n%s" % 'not realtime' if abs(self.plot_delay) > 5 else "%1.2f ms" % (self.plot_delay * 1.e3))

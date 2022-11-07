@@ -4,11 +4,10 @@ bitarray>=0.8.1
 matplotlib
 numba
 numpy
-online_monitor>=0.4.2,<0.5
+online_monitor>=0.5.2
 pymosa_mimosa26_interpreter>=1.0.0
-# pyqt -> this line is intentionally commented out
+pyqt5
 pyyaml
-qtpy
 tables
 tqdm
-pyqtgraph<0.12
+pyqtgraph>=0.13
