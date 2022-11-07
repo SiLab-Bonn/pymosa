@@ -6,8 +6,6 @@ numba
 numpy
 online_monitor>=0.5.2
 pymosa_mimosa26_interpreter>=1.0.0
-pyqt5
 pyyaml
 tables
 tqdm
-pyqtgraph>=0.13
