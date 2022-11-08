@@ -1,10 +1,6 @@
-import os
-
-import yaml
 import gc
 import numpy as np
 from numba import njit
-from zmq.utils import jsonapi
 
 from online_monitor.converter.transceiver import Transceiver
 from online_monitor.utils import utils
@@ -204,9 +200,6 @@ class HitCorrelator(Transceiver):
             remove_background(self.column_corr_hist, self.row_corr_hist, self.remove_background_percentage)
 
         return [{'column': self.column_corr_hist, 'row': self.row_corr_hist}]
-
-    def serialize_data(self, data):
-        return jsonapi.dumps(data, cls=utils.NumpyEncoder)
 
     def handle_command(self, command):
         # Reset histogramms and data buffer, call garbage collector
