@@ -70,7 +70,7 @@ class HitCorrelator(Transceiver):
 
     def setup_interpretation(self):
         self.active_tab = None  # Stores name of active tab in online monitor
-        self.hit_corr_tab = 'HIT_Correlator'  # name of correlator tab, has to match with name specified in configuration.yaml for online monitor
+        self.hit_corr_tab = None  # Name of receiver tab, is being set by sending command 
         self.start_signal = 1  # will be set in handle_command function; correlation starts if this is set to 0
         self.active_dut1 = 0
         self.active_dut2 = 0
@@ -267,3 +267,5 @@ class HitCorrelator(Transceiver):
                 elif self.transpose_checkbox == 2:
                     self.transpose = True
                 create_corr_hist(self.active_dut1, self.active_dut2, self.transpose)
+        elif 'RECEIVER' in command[0]:
+            self.hit_corr_tab = command[0].split()[1]      

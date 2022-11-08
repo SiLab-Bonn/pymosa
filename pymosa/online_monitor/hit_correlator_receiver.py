@@ -21,6 +21,9 @@ class HitCorrelator(Receiver):
         if not 'duts' in self.config:
             raise KeyError("Define DUTs in the configuration.yaml")
 
+        # Send the receiver name to the converter in order for it to only interpret data when corresponding receiver is active
+        self.send_command(f'RECEIVER {self.name}')    
+
     def setup_widgets(self, parent, name):
         self.occupancy_images_columns = {}
         self.occupancy_images_rows = {}
