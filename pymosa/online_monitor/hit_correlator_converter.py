@@ -1,10 +1,6 @@
-import os
-
-import yaml
 import gc
 import numpy as np
 from numba import njit
-from zmq.utils import jsonapi
 
 from online_monitor.converter.transceiver import Transceiver
 from online_monitor.utils import utils
@@ -74,7 +70,7 @@ class HitCorrelator(Transceiver):
 
     def setup_interpretation(self):
         self.active_tab = None  # Stores name of active tab in online monitor
-        self.hit_corr_tab = 'HIT_Correlator'  # name of correlator tab, has to match with name specified in configuration.yaml for online monitor
+        self.hit_corr_tab = None  # Name of receiver tab, is being set by sending command 
         self.start_signal = 1  # will be set in handle_command function; correlation starts if this is set to 0
         self.active_dut1 = 0
         self.active_dut2 = 0
@@ -205,9 +201,6 @@ class HitCorrelator(Transceiver):
 
         return [{'column': self.column_corr_hist, 'row': self.row_corr_hist}]
 
-    def serialize_data(self, data):
-        return jsonapi.dumps(data, cls=utils.NumpyEncoder)
-
     def handle_command(self, command):
         # Reset histogramms and data buffer, call garbage collector
         def reset():
@@ -274,3 +267,5 @@ class HitCorrelator(Transceiver):
                 elif self.transpose_checkbox == 2:
                     self.transpose = True
                 create_corr_hist(self.active_dut1, self.active_dut2, self.transpose)
+        elif 'RECEIVER' in command[0]:
+            self.hit_corr_tab = command[0].split()[1]      

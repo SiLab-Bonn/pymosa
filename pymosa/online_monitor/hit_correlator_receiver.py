@@ -14,11 +14,15 @@ from online_monitor.receiver.receiver import Receiver
 class HitCorrelator(Receiver):
 
     def setup_receiver(self):
+        self.occupancy_data = {'column': None, 'row': None} 
         self.set_bidirectional_communication()  # We want to change converter settings
         
         # Check that we have the DUTs defined
         if not 'duts' in self.config:
             raise KeyError("Define DUTs in the configuration.yaml")
+
+        # Send the receiver name to the converter in order for it to only interpret data when corresponding receiver is active
+        self.send_command(f'RECEIVER {self.name}')    
 
     def setup_widgets(self, parent, name):
         self.occupancy_images_columns = {}
@@ -110,10 +114,7 @@ class HitCorrelator(Receiver):
         occupancy_graphics1.show()
         view1 = occupancy_graphics1.addViewBox()
         occupancy_img_col = pg.ImageItem(border='w')
-        poss = np.array([0.0, 0.01, 0.5, 1.0])
-        color = np.array([[1.0, 1.0, 1.0, 1.0], [0.267004, 0.004874, 0.329415, 1.0], [0.127568, 0.566949, 0.550556, 1.0], [0.993248, 0.906157, 0.143936, 1.0]])  # Zero is white
-        mapp = pg.ColorMap(poss, color)
-        lutt = mapp.getLookupTable(0.0, 1.0, 100)
+        lutt = utils.lut_from_colormap("viridis")
         occupancy_img_col.setLookupTable(lutt, update=True)
         self.plot1 = pg.PlotWidget(viewBox=view1)
         self.plot1.getAxis('bottom').setLabel(text='Columns')
@@ -196,12 +197,16 @@ class HitCorrelator(Receiver):
 
     def handle_data(self, data):
         if 'meta_data' not in data:
-            for key in data:
-                if 'column' == key:
-                    self.occupancy_images_columns.setImage(data[key][:, :], autoDownsample=True)
-                    self.plot1.setTitle('Column Correlation, Sum: %i' % data[key][:, :].sum())
-                if 'row' == key:
-                    self.occupancy_images_rows.setImage(data[key][:, :], autoDownsample=True)
-                    self.plot2.setTitle('Row Correlation, Sum: %i' % data[key][:, :].sum())
+            self.occupancy_data.update(data)
         else:
             self.rate_label.setText('Readout Rate: %d Hz' % data['meta_data']['fps'])
+
+    def refresh_data(self):
+        for dim, data in self.occupancy_data.items():
+            if data is not None:
+                if dim == 'column':
+                    self.occupancy_images_columns.setImage(data[:, :], autoDownsample=True)
+                    self.plot1.setTitle('Column Correlation, Sum: %i' % data[:, :].sum())
+                elif dim == 'row':
+                    self.occupancy_images_rows.setImage(data[:, :], autoDownsample=True)
+                    self.plot2.setTitle('Row Correlation, Sum: %i' % data[:, :].sum())

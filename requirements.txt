@@ -4,10 +4,8 @@ bitarray>=0.8.1
 matplotlib
 numba
 numpy
-online_monitor>=0.5.2
+online_monitor>=0.6.0
 pymosa_mimosa26_interpreter>=1.0.0
-pyqt5
 pyyaml
 tables
 tqdm
-pyqtgraph>=0.13

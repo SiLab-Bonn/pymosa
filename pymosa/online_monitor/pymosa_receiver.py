@@ -12,6 +12,8 @@ from online_monitor.utils import utils
 class PymosaMimosa26(Receiver):
 
     def setup_receiver(self):
+        self.occupancy_data = [None] * 6
+        self.event_status_data = [None] * 6
         self.set_bidirectional_communication()  # We want to change converter settings
 
     def setup_widgets(self, parent, name):
@@ -23,10 +25,7 @@ class PymosaMimosa26(Receiver):
         # Plots with axis stored in here
         self.plots = []
         self.event_status_widgets = []
-        poss = np.array([0.0, 0.01, 0.5, 1.0])
-        color = np.array([[1.0, 1.0, 1.0, 1.0], [0.267004, 0.004874, 0.329415, 1.0], [0.127568, 0.566949, 0.550556, 1.0], [0.993248, 0.906157, 0.143936, 1.0]])  # Zero is white
-        mapp = pg.ColorMap(poss, color)
-        lutt = mapp.getLookupTable(0.0, 1.0, 100)
+        lutt = utils.lut_from_colormap("viridis")
 
         self.occ_hist_sum = np.zeros(shape=(6,))
         for plane in range(3):  # Loop over 3 * 2 plot widgets
@@ -154,10 +153,9 @@ class PymosaMimosa26(Receiver):
 
         if 'meta_data' not in data:
             for plane, plot in enumerate(self.plots):
-                self.occupancy_images[plane].setImage(data['occupancies'][plane], autoDownsample=True)
+                self.occupancy_data[plane] = data['occupancies'][plane]
                 self.occ_hist_sum[plane] = data['occupancies'][plane].sum()
-                self.event_status_plots[plane].setData(x=np.linspace(-0.5, 31.5, 33), y=data['event_status'][plane], stepMode='center', fillLevel=0, brush=(0, 0, 255, 150))
-                plot.setTitle('Occupancy Map, Sum: %i' % self.occ_hist_sum[plane])
+                self.event_status_data[plane] = data['event_status'][plane]
         else:
             update_rate(data['meta_data']['fps'], data['meta_data']['hps'], data['meta_data']['total_hits'], data['meta_data']['eps'], data['meta_data']['total_events'])
             self.timestamp_label.setText("Data Timestamp\n%s" % time.asctime(time.localtime(data['meta_data']['timestamp_stop'])))
@@ -165,3 +163,11 @@ class PymosaMimosa26(Receiver):
             now = time.time()
             self.plot_delay = self.plot_delay * 0.9 + (now - data['meta_data']['timestamp_stop']) * 0.1
             self.plot_delay_label.setText("Plot Delay\n%s" % 'not realtime' if abs(self.plot_delay) > 5 else "%1.2f ms" % (self.plot_delay * 1.e3))
+    
+    def refresh_data(self):
+        for plane, plot in enumerate(self.plots):
+            if self.occupancy_data[plane] is not None:
+                self.occupancy_images[plane].setImage(self.occupancy_data[plane], autoDownsample=True)
+            if self.event_status_data[plane] is not None:    
+                self.event_status_plots[plane].setData(x=np.linspace(-0.5, 31.5, 33), y=self.event_status_data[plane], stepMode='center', fillLevel=0, brush=(0, 0, 255, 150))
+            plot.setTitle('Occupancy Map, Sum: %i' % self.occ_hist_sum[plane])
