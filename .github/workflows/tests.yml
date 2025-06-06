@@ -15,10 +15,6 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: "3.11"
-
-    - name: Qt5 defaults
-      run: |
-        sudo apt install qtbase5-dev qt5-qmake
             
     - name: Install pymosa
       run: |
