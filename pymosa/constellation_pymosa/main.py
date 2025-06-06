@@ -1,6 +1,6 @@
 from constellation.core.logging import setup_cli_logging
 from constellation.core.satellite import SatelliteArgumentParser
-from pymosa_satellite_satellite import Pymosa
+from pymosa_satellite import Pymosa
 
 def main(args=None):
     parser = SatelliteArgumentParser()
