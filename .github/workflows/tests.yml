@@ -18,7 +18,7 @@ jobs:
 
     - name: Qt5 defaults
       run: |
-        sudo apt install qt5-default
+        sudo apt install qtbase5-dev qt5-qmake
             
     - name: Install pymosa
       run: |
