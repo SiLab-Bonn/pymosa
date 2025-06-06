@@ -2,7 +2,8 @@ import logging
 import datetime
 from time import sleep, time, mktime
 from threading import Thread, Event, Lock, Condition
-from collections import deque, Iterable
+from collections import deque
+from collections.abc import Iterable
 import sys
 
 import numpy as np
