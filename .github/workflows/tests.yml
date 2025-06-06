@@ -5,16 +5,16 @@ on: push
 jobs:
   tests:
     name: Test
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
     steps:
     # Check out repo
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Setup python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
-        python-version: "3.9"
+        python-version: "3.11"
 
     - name: Qt5 defaults
       run: |
