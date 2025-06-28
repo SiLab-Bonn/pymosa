@@ -1,9 +1,9 @@
 from constellation.core.configuration import Configuration
 from constellation.core.satellite import Satellite
 import time
-from constellation.core.commandmanager import cscp_requestable
-from constellation.core.cscp import CSCPMessage
 from constellation.core.cmdp import MetricsType
+from constellation.core.fsm import SatelliteState
+from constellation.core.monitoring import schedule_metric
 import os
 import yaml
 import pymosa
@@ -12,7 +12,7 @@ import logging
 from pymosa.m26_raw_data import save_configuration_dict
 from time import sleep, strftime, time
 from tqdm import tqdm
-
+from typing import Any
 
 class Pymosa(Satellite):
     def __init__(self, *args, **kwargs):
@@ -117,5 +117,11 @@ class Pymosa(Satellite):
         self.fh.setFormatter(logging.Formatter(FORMAT))
         self.logger = logging.getLogger()
         self.logger.addHandler(self.fh)
+        self.telescope.dut['TLU']['TRIGGER_COUNTER'] = 0
 
-
+    @schedule_metric("", MetricsType.LAST_VALUE, 1)
+    def trigger_number(self) -> Any:
+        if self.fsm.current_state_value == SatelliteState.RUN:
+            return self.telescope.dut['TLU']['TRIGGER_COUNTER']
+        else:
+            return None
