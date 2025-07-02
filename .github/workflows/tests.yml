@@ -24,7 +24,9 @@ jobs:
         plugin_online_monitor pymosa/online_monitor
 
     - name: Headless display setup
-      uses: pyvista/setup-headless-display-action@v3  
+    - uses: pyvista/setup-headless-display-action@v3
+      with:
+        qt: true
     
     - name: Test
       run: pytest -s -v
