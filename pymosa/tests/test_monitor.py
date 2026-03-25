@@ -9,7 +9,7 @@ import unittest
 import yaml
 import time
 import psutil
-from PyQt5.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication
 
 from online_monitor import OnlineMonitor
 
