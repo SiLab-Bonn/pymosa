@@ -23,18 +23,7 @@ class Pymosa(Satellite):
         pymosa_path = os.path.dirname(pymosa.__file__)
         with open(os.path.join(pymosa_path, 'm26_configuration.yaml'), 'r') as f:
             self.yaml_config = yaml.safe_load(f)
-        # overwrite some configuration variables with toml config
-        configuration = config.get_dict()
-        if configuration["run_number"] == "None":
-            configuration["run_number"] = None
-        if configuration["output_folder"] == "None":
-            configuration["output_folder"] = None
-        if configuration["m26_configuration_file"] == "None":
-            configuration["m26_configuration_file"] = None
-        if configuration["enabled_m26_channels"] == "None":
-            configuration["enabled_m26_channels"] = None
-        for key in configuration.keys():
-            self.yaml_config[key] = configuration[key]
+        self._load_config(config)
         # Create telescope object and load hardware configuration
         self.telescope = m26(conf=None)  # None: use default hardware configuration
         return "init done"
@@ -118,6 +107,24 @@ class Pymosa(Satellite):
         self.logger = logging.getLogger()
         self.logger.addHandler(self.fh)
         self.telescope.dut['TLU']['TRIGGER_COUNTER'] = 0
+
+    def _load_config(self, config: Configuration) -> None:
+        config.set_default(key='scan_timeout', value=None)
+        config.set_default(key='run_number', value=None)
+        config.set_default(key='output_folder', value=None)
+        config.set_default(key='m26_configuration_file', value=None)
+        config.set_default(key='m26_jtag_configuration', value=True)
+        config.set_default(key='enabled_m26_channels', value=None)
+
+        self.yaml_config['no_data_timeout'] = config.get(key='no_data_timeout')
+        self.yaml_config['send_data'] = config.get(key='send_data')
+        self.yaml_config['max_triggers'] = config.get(key='max_triggers')
+        self.yaml_config['scan_timeout'] = config.get(key='scan_timeout')
+        self.yaml_config['run_number'] = config.get(key='run_number')
+        self.yaml_config['output_folder'] = config.get(key='output_folder')
+        self.yaml_config['m26_configuration_file'] = config.get(key='m26_configuration_file')
+        self.yaml_config['m26_jtag_configuration'] = config.get(key='m26_jtag_configuration')
+        self.yaml_config['enabled_m26_channels'] = config.get(key='enabled_m26_channels')
 
     @schedule_metric("", MetricsType.LAST_VALUE, 1)
     def trigger_number(self) -> Any:
