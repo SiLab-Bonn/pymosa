@@ -12,8 +12,8 @@ jobs:
         python-version: ["3.11", "3.12", "3.13"]
     steps:
     # Check out repo
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v5
+    - uses: actions/checkout@v6
+    - uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
             
@@ -22,11 +22,6 @@ jobs:
         pip install --upgrade pip
         pip install -e .
         plugin_online_monitor pymosa/online_monitor
-
-    - name: Headless display setup
-      uses: pyvista/setup-headless-display-action@v3
-      with:
-        qt: true
     
     - name: Test
       run: pytest -s -v

@@ -1,6 +1,6 @@
 ---
 title: "Pymosa"
-description: "Satellite for controlling a EUDET-type Beam telescope using a MMC3 readout board"
+description: "Satellite for controlling a EUDET-type beam telescope using a MMC3 readout board"
 category: "Readout Systems"
 language: "Python"
 parent_class: "TransmitterSatellite"
@@ -73,7 +73,7 @@ The following metrics are distributed by this satellite and can be subscribed to
 
 | Metric | Description | Value Type | Interval |
 |--------|-------------|------------|----------|
-| `TRIGGER_NUMBER` | Number of recieved triggers | Int | 1s |
+| `TRIGGER_NUMBER` | Number of received triggers | Int | 1s |
 
 ## Data
 

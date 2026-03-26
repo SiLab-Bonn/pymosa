@@ -14,11 +14,12 @@ from time import sleep, strftime, time
 from tqdm import tqdm
 from typing import Any
 
+
 class Pymosa(Satellite):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def do_initializing(self, config: Configuration) -> None:
+    def do_initializing(self, config: Configuration) -> str:
         # Open Mimosa26 std. configuration
         pymosa_path = os.path.dirname(pymosa.__file__)
         with open(os.path.join(pymosa_path, 'm26_configuration.yaml'), 'r') as f:
@@ -28,12 +29,12 @@ class Pymosa(Satellite):
         self.telescope = m26(conf=None)  # None: use default hardware configuration
         return "init done"
 
-    def do_launching(self):
+    def do_launching(self) -> str:
         # Initialize telescope hardware and set up parameters
         self.telescope.init(init_conf=self.yaml_config)
         return "launching done"
 
-    def do_run(self, payload=None) -> None:
+    def do_run(self, payload=None) -> str:
         self._pre_run()
         with self.telescope.access_file():
             save_configuration_dict(self.telescope.raw_data_file.h5_file, 'configuration', self.telescope.telescope_conf)
@@ -69,12 +70,12 @@ class Pymosa(Satellite):
         self.telescope.analyze()
         return "running done"
 
-    def do_landing(self):
+    def do_landing(self) -> str:
         # Close the resources
         self.telescope.close()
         return "landing done"
 
-    def _pre_run(self):
+    def _pre_run(self) -> None:
         self.stop_scan = False
         # signal.signal(signal.SIGINT, self.telescope._signal_handler)
         logging.info('Press Ctrl-C to stop run')
@@ -127,7 +128,7 @@ class Pymosa(Satellite):
         self.yaml_config['enabled_m26_channels'] = config.get(key='enabled_m26_channels')
 
     @schedule_metric("", MetricsType.LAST_VALUE, 1)
-    def trigger_number(self) -> Any:
+    def trigger_number(self) -> int | None:
         if self.fsm.current_state_value == SatelliteState.RUN:
             return self.telescope.dut['TLU']['TRIGGER_COUNTER']
         else:
