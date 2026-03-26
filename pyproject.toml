@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pymosa"
+dynamic = ["version"]
+license = { "text" = "MIT License" }
+readme = {file = "README.md", content-type = "text/markdown"}
+requires-python = ">=3.9"
+authors = [
+    {name = "Ivan Caicedo", email="caicedo@physik.uni-bonn.de"},
+    {name ="Yannick Dieter", email="dieter@physik.uni-bonn.de"},
+    {name ="Toko Hirono", email="hirono@physik.uni-bonn.de"},
+    {name ="Jens Janssen", email="janssen@physik.uni-bonn.de"},
+    {name ="David-Leon Pohl", email="pohl@physik.uni-bonn.de"},
+]
+
+dependencies = [
+    "basil_daq>=3.0.0,<4.0.0",
+    "bitarray>=0.8.1",
+    "matplotlib",
+    "numba",
+    "numpy",
+    "online_monitor>=0.6.0",
+    "pymosa_mimosa26_interpreter>=1.0.0",
+    "pyyaml",
+    "tables",
+    "tqdm"
+]
+
+[project.scripts]
+pymosa = "pymosa.m26:main"
+pymosa_monitor = "pymosa.online_monitor.start_pymosa_online_monitor:main"
+
+[project.urls]
+"Repository" = 'https://github.com/SiLab-Bonn/pymosa'
+
+[tool.setuptools.dynamic]
+version = {attr = "pymosa.__version__"}
+
+[tool.setuptools]
+packages = ["pymosa"]

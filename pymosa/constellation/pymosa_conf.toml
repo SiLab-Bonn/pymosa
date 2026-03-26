@@ -1,0 +1,6 @@
+[Pymosa]
+
+[Pymosa.ANEMONE]
+no_data_timeout = 30
+send_data = 'tcp://127.0.0.1:8500'
+max_triggers = 1000000

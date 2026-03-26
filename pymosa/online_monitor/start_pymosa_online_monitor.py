@@ -9,7 +9,7 @@ import os
 import subprocess
 
 import psutil
-from PyQt5.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication
 
 from online_monitor.OnlineMonitor import OnlineMonitorApplication
 from online_monitor.utils import utils
