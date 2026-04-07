@@ -1,7 +1,6 @@
 from constellation.core.configuration import Configuration
 from constellation.core.satellite import Satellite
 import time
-from constellation.core.cmdp import MetricsType
 from constellation.core.fsm import SatelliteState
 from constellation.core.monitoring import schedule_metric
 import os
@@ -127,9 +126,6 @@ class Pymosa(Satellite):
         self.yaml_config['m26_jtag_configuration'] = config.get(key='m26_jtag_configuration')
         self.yaml_config['enabled_m26_channels'] = config.get(key='enabled_m26_channels')
 
-    @schedule_metric("", MetricsType.LAST_VALUE, 1)
+    @schedule_metric("", 1, [SatelliteState.RUN])
     def trigger_number(self) -> int | None:
-        if self.fsm.current_state_value == SatelliteState.RUN:
-            return self.telescope.dut['TLU']['TRIGGER_COUNTER']
-        else:
-            return None
+        return self.telescope.dut['TLU']['TRIGGER_COUNTER']

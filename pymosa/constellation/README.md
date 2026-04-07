@@ -21,18 +21,17 @@ git clone https://github.com/SiLab-Bonn/pymosa
 Install via:
 ```sh
 cd pymosa
-pip install ConstellationDAQ
-pip install -e .
+pip install -e .[constellation]
 ```
 
 ## Usage
 
-Set the correct IP address in [pymosa/m26.yaml](https://github.com/SiLab-Bonn/pymosa) for more information.
+Set the correct IP address in [pymosa/m26.yaml](https://github.com/SiLab-Bonn/pymosa/blob/master/pymosa/m26.yaml) for more information.
 
 Start the satellite with:
 
 ```sh
-python pymosa/constellation/__main__.py -g testbeam -n ANEMONE
+SatellitePymosa -g testbeam -n ANEMONE
 ```
 
 ## Parameters
