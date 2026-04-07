@@ -32,9 +32,13 @@ dependencies = [
 [project.scripts]
 pymosa = "pymosa.m26:main"
 pymosa_monitor = "pymosa.online_monitor.start_pymosa_online_monitor:main"
+SatellitePymosa = "pymosa.constellation.__main__:main"
 
 [project.urls]
 "Repository" = 'https://github.com/SiLab-Bonn/pymosa'
+
+[project.optional-dependencies]
+constellation = ["ConstellationDAQ>=0.8"]
 
 [tool.setuptools.dynamic]
 version = {attr = "pymosa.__version__"}
