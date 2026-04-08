@@ -44,14 +44,14 @@ SatellitePymosa -g testbeam -n ANEMONE
 | `scan_timeout` | (Optional) Timeout after which the scan will be stopped, in seconds; if 0, the timeout is disabled. | Integer | 0 |
 | `run_number` | (Optional) Base run number, will be automatically increased; if none is given, generate filename | Integer | None |
 | `output_folder` | (Optional) Output folder for the telescope data; if none is given, the current working directory is used. | String | None |
-| `m26_configuration_file` | (Optional) Configuration file for Mimosa26 sensors, if note stated a default one is used. | String | 'm26_config/m26_threshold_8.yaml' |
+| `m26_configuration_file` | (Optional) Configuration file for Mimosa26 sensors, if note stated a default one is used. | String | `m26_config/m26_threshold_8.yaml` |
 | `m26_jtag_configuration` | (Optional) Send Mimosa26 configuration via JTAG. | String | True |
-| `enabled_m26_channels` | (Optional) Enabled RX channels, eg. ["M26_RX1", "M26_RX2", "M26_RX6"]; default None (=all planes) | String | None |
+| `enabled_m26_channels` | (Optional) Enabled RX channels for readout of the individual planes, as example ["M26_RX1", "M26_RX2", "M26_RX6"]; default None (=all planes) | String | None |
 
 
 ### Configuration Example
 
-An example configuration for the TJ-Monopix2 satellite which could be dropped into a Constellation configuration as a starting point:
+An example Pymosa satellite configuration which could be dropped into a Constellation configuration as a starting point:
 
 ```toml
 [pymosa.ANEMONE]
@@ -68,7 +68,7 @@ enabled_m26_channels = "None"
 
 ## Metrics
 
-The following metrics are distributed by this satellite and can be subscribed to. Timed metrics provide an interval in units of time, triggered metrics in number of calls.
+The following metrics are distributed by this satellite and can be subscribed to.
 
 | Metric | Description | Value Type | Interval |
 |--------|-------------|------------|----------|
